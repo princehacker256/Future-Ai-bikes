@@ -1,1 +1,1952 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Bovada Earns</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif}
+        body{background:#f5f7fa;color:#1e293b;min-height:100vh}
+        .app-container{max-width:480px;margin:0 auto;background:#f5f7fa;min-height:100vh;position:relative}
+
+        /* Preloader */
+        #preloader{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#f1f5f9;transition:opacity .7s,visibility .7s}
+        #preloader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+        #preloader .preloader-icon{width:110px;height:110px;border-radius:26px;background:linear-gradient(145deg,#14532d,#0f3d24);box-shadow:0 0 0 2px rgba(15,157,88,.6),0 0 28px 6px rgba(96,165,250,.35),0 10px 30px rgba(15,61,36,.25);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:36px;overflow:hidden;animation:preloaderPulse 2.4s ease-in-out infinite}
+        @keyframes preloaderPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+        #preloader .preloader-icon .bar{position:absolute;bottom:28px;width:12px;border-radius:3px}
+        #preloader .preloader-icon .bar-1{left:26px;height:24px;background:#34d399}
+        #preloader .preloader-icon .bar-2{left:46px;height:42px;background:#f59e0b}
+        #preloader .preloader-icon .bar-3{left:66px;height:60px;background:#22c55e}
+        #preloader .preloader-icon .arrow-line{position:absolute;top:30px;left:18px;width:66px;height:3px;background:#fde68a;transform:rotate(-35deg);transform-origin:left center;border-radius:2px}
+        #preloader .preloader-icon .arrow-head{position:absolute;top:14px;right:18px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #fde68a;transform:rotate(25deg)}
+        #preloader .preloader-icon .coin{position:absolute;bottom:16px;right:16px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b);border:2px solid #d97706;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#0f3d24;line-height:1}
+        #preloader .preloader-title{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.5px;margin-bottom:14px;text-align:center}
+        #preloader .preloader-status{font-size:17px;font-weight:500;color:#94a3b8;display:flex;align-items:baseline;gap:1px}
+        #preloader .preloader-status .dots::after{content:'';display:inline-block;width:1.2em;text-align:left;animation:loadingDots 1.8s infinite steps(4)}
+        @keyframes loadingDots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+
+        /* App Header */
+        .app-header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#fff;border-bottom:1px solid #eef1f5;position:sticky;top:0;z-index:500}
+        .app-header .brand{display:flex;align-items:center;gap:12px}
+        .brand-logo{position:relative;width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#14532d,#0f3d24);box-shadow:inset 0 0 0 2px #0a2a18,0 2px 6px rgba(15,61,36,.25);overflow:hidden;flex-shrink:0}
+        .brand-logo .bar{position:absolute;bottom:8px;width:6px;border-radius:2px}
+        .brand-logo .bar-1{left:8px;height:10px;background:#34d399}
+        .brand-logo .bar-2{left:16px;height:16px;background:#f59e0b}
+        .brand-logo .bar-3{left:24px;height:22px;background:#22c55e}
+        .brand-logo .arrow-line{position:absolute;top:11px;left:5px;width:26px;height:2px;background:#fde68a;transform:rotate(-38deg);transform-origin:left center;border-radius:2px}
+        .brand-logo .arrow-head{position:absolute;top:4px;right:6px;width:0;height:0;border-left:3px solid transparent;border-right:3px solid transparent;border-bottom:6px solid #fde68a;transform:rotate(28deg)}
+        .brand-logo .coin{position:absolute;bottom:5px;right:4px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b);border:1px solid #d97706;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:#0f3d24;line-height:1}
+        .brand-text{font-size:20px;font-weight:800;color:#0f9d58;letter-spacing:-.4px}
+        .brand-text span{color:#0f172a}
+
+        .verified-avatar{position:relative;width:44px;height:44px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .verified-avatar .va-ring{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 25%,#e0f2fe,#dbeafe);box-shadow:0 0 0 3px #e0f2fe,0 3px 8px rgba(30,64,175,.12)}
+        .verified-avatar .va-inner{position:relative;width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 0 2px #0f172a}
+        .verified-avatar .va-inner i{font-size:22px;color:#0f172a;line-height:1;margin-top:5px}
+        .verified-avatar .va-check{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;z-index:3;display:flex;align-items:center;justify-content:center}
+        .verified-avatar .va-check svg{width:100%;height:100%;display:block;filter:drop-shadow(0 1px 2px rgba(37,99,235,.4))}
+
+        /* AUTH PAGES */
+        .auth-container{padding:30px 24px 40px;min-height:100vh;display:flex;flex-direction:column;background:#fff}
+        .auth-logo-top{text-align:center;margin-bottom:24px;display:flex;justify-content:center}
+        .auth-logo-icon{width:90px;height:90px;border-radius:22px;background:linear-gradient(145deg,#14532d,#0f3d24);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 10px 25px rgba(15,157,88,.25);overflow:hidden}
+        .auth-logo-icon .bar{position:absolute;bottom:22px;width:10px;border-radius:3px}
+        .auth-logo-icon .bar-1{left:22px;height:20px;background:#4ade80}
+        .auth-logo-icon .bar-2{left:38px;height:35px;background:#f59e0b}
+        .auth-logo-icon .bar-3{left:54px;height:50px;background:#22c55e}
+        .auth-logo-icon .arrow-line{position:absolute;top:25px;left:15px;width:55px;height:3px;background:#fde68a;transform:rotate(-35deg);transform-origin:left center;border-radius:2px}
+        .auth-logo-icon .arrow-head{position:absolute;top:12px;right:18px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #fde68a;transform:rotate(25deg)}
+        .auth-logo-icon .coin{position:absolute;bottom:14px;right:14px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b);border:2px solid #d97706;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#0f3d24}
+
+        .auth-title{font-size:28px;font-weight:800;color:#1e293b;text-align:center;margin-bottom:10px;line-height:1.2}
+        .auth-subtitle{font-size:14px;color:#64748b;text-align:center;line-height:1.5;margin-bottom:28px;padding:0 10px}
+        .auth-form-group{margin-bottom:18px}
+        .auth-form-group label{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:6px;display:block}
+        .auth-form-group label .required{color:#ef4444;margin-left:2px}
+        .auth-form-group label .optional{color:#94a3b8;font-weight:400;font-size:13px}
+        .auth-input-wrapper{display:flex;align-items:center;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden}
+        .auth-input-wrapper:focus-within{border-color:#0f9d58;box-shadow:0 0 0 3px rgba(15,157,88,.1)}
+        .auth-input-wrapper .prefix{padding:14px 16px;background:#f8fafc;font-weight:700;font-size:15px;color:#475569;border-right:1px solid #e2e8f0;white-space:nowrap}
+        .auth-input-wrapper input{flex:1;padding:14px 16px;border:none;background:transparent;font-size:15px;color:#1e293b;outline:none;min-width:0}
+        .auth-input-wrapper input::placeholder{color:#94a3b8}
+        .auth-input-wrapper .eye-btn{padding:14px 16px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+        .auth-input-wrapper.no-prefix input{padding-left:16px}
+        .remember-row{display:flex;align-items:center;gap:10px;margin:4px 0 20px}
+        .remember-row input[type="checkbox"]{width:20px;height:20px;accent-color:#0f9d58;cursor:pointer;border-radius:4px}
+        .remember-row label{font-size:14px;color:#475569;font-weight:500;cursor:pointer}
+        .auth-btn-dark{width:100%;padding:16px;background:#0f172a;color:#fff;border:none;border-radius:12px;font-weight:800;font-size:16px;letter-spacing:.5px;cursor:pointer;text-transform:uppercase}
+        .auth-link-row{text-align:center;margin-top:20px;font-size:14px;color:#64748b}
+        .auth-link-row a{color:#0f9d58;font-weight:700;text-decoration:none;cursor:pointer}
+        .auth-link-row .forgot-link{display:block;margin-bottom:16px;color:#2563eb;font-weight:700}
+        .auth-error-msg{display:none;color:#ef4444;font-size:13px;margin-top:10px;text-align:center;font-weight:600;background:#fef2f2;padding:10px;border-radius:8px;border:1px solid #fecaca}
+        .auth-success-msg{display:none;color:#0f9d58;font-size:13px;margin-top:10px;text-align:center;font-weight:600;background:#ecfdf5;padding:10px;border-radius:8px;border:1px solid #a7f3d0}
+
+        /* Forgot Password Alert */
+        .custom-alert-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
+        .custom-alert-overlay.active{display:flex}
+        .custom-alert-box{background:#fff;border-radius:20px;padding:28px 24px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+        .custom-alert-box .ca-icon{width:64px;height:64px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#0f9d58}
+        .custom-alert-box .ca-title{font-size:18px;font-weight:800;color:#1e293b;margin-bottom:10px}
+        .custom-alert-box .ca-message{font-size:15px;color:#64748b;line-height:1.5;margin-bottom:20px}
+        .custom-alert-box .ca-btn{width:100%;padding:14px;background:#0f9d58;color:#fff;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer}
+
+        /* Dashboard */
+        .dashboard-welcome{background:linear-gradient(135deg,#e8f5e9 0%,#d4edda 50%,#c8e6c9 100%);border-radius:20px;padding:24px 20px;margin:16px 20px}
+        .dashboard-welcome .greeting{font-size:22px;font-weight:800;color:#1e293b;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .dashboard-welcome .greeting .wave{font-size:26px;line-height:1;display:inline-block;animation:waveHand 2.5s infinite;transform-origin:70% 70%}
+        @keyframes waveHand{0%,100%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}30%{transform:rotate(14deg)}40%{transform:rotate(-4deg)}50%{transform:rotate(10deg)}60%{transform:rotate(0)}}
+        .dashboard-welcome .sub-text{font-size:14px;color:#475569;line-height:1.5;margin-bottom:16px}
+        .dashboard-welcome .action-row{display:flex;gap:10px}
+        .btn-dark-pill{background:#0f172a;color:#fff;border:none;border-radius:14px;padding:12px 24px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+        .btn-green-pill{background:#0f9d58;color:#fff;border:none;border-radius:14px;padding:12px 20px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+        .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 20px 16px}
+        .stat-card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .stat-card .stat-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px}
+        .stat-card .stat-icon.yellow{background:#fef3c7;color:#d97706}
+        .stat-card .stat-icon.green{background:#d1fae5;color:#0f9d58}
+        .stat-card .stat-icon.blue{background:#dbeafe;color:#2563eb}
+        .stat-card .stat-icon.teal{background:#ccfbf1;color:#0d9488}
+        .stat-card .stat-label{font-size:13px;color:#64748b;font-weight:500;margin-bottom:2px}
+        .stat-card .stat-value{font-size:20px;font-weight:800;color:#1e293b}
+        .stat-card .stat-value span{font-size:12px;font-weight:500;color:#94a3b8;margin-left:2px}
+        .section-card{background:#fff;border-radius:18px;padding:18px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .section-card .section-title{font-size:16px;font-weight:700;color:#1e293b;margin-bottom:14px}
+        .revenue-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f8fafc;border-radius:12px;margin-bottom:8px}
+        .revenue-row:last-child{margin-bottom:0}
+        .revenue-row .rev-left{display:flex;align-items:center;gap:10px}
+        .revenue-row .rev-dot{width:10px;height:10px;border-radius:50%}
+        .revenue-row .rev-dot.green{background:#0f9d58}
+        .revenue-row .rev-dot.yellow{background:#f59e0b}
+        .revenue-row .rev-label{font-size:14px;color:#475569;font-weight:500}
+        .revenue-row .rev-value{font-size:15px;font-weight:800;color:#1e293b}
+        .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        .quick-item{text-align:center;cursor:pointer}
+        .quick-item .quick-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 6px}
+        .quick-item .quick-icon.green{background:#d1fae5;color:#0f9d58}
+        .quick-item .quick-icon.red{background:#fee2e2;color:#ef4444}
+        .quick-item .quick-icon.blue{background:#dbeafe;color:#2563eb}
+        .quick-item .quick-icon.yellow{background:#fef3c7;color:#d97706}
+        .quick-item .quick-icon.purple{background:#ede9fe;color:#7c3aed}
+        .quick-item .quick-icon.teal{background:#ccfbf1;color:#0d9488}
+        .quick-item .quick-label{font-size:12px;color:#475569;font-weight:500}
+
+        .withdraw-balance{background:linear-gradient(135deg,#e8f5e9,#d4edda);border-radius:18px;padding:18px 20px;margin:0 20px 16px;display:flex;align-items:center;gap:14px}
+        .withdraw-balance .wb-icon{width:48px;height:48px;background:#0f9d58;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px}
+        .withdraw-balance .wb-label{font-size:13px;color:#475569}
+        .withdraw-balance .wb-value{font-size:22px;font-weight:800;color:#0f9d58}
+        .withdraw-form{background:#fff;border-radius:18px;padding:20px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .form-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .form-label-row .label{font-size:15px;font-weight:700;color:#1e293b}
+        .form-label-row .hint{font-size:12px;color:#94a3b8}
+        .input-group-custom{display:flex;align-items:center;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden}
+        .input-group-custom:focus-within{border-color:#0f9d58;box-shadow:0 0 0 3px rgba(15,157,88,.1)}
+        .input-group-custom .prefix{padding:12px 14px;background:#f1f5f9;font-weight:700;font-size:14px;color:#475569;border-right:1px solid #e2e8f0}
+        .input-group-custom input{flex:1;padding:12px 14px;border:none;background:transparent;font-size:16px;font-weight:600;color:#1e293b;outline:none}
+        .quick-select-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+        .quick-select-btn{padding:8px 16px;border:1.5px solid #e2e8f0;border-radius:30px;background:#fff;font-size:13px;font-weight:600;color:#475569;cursor:pointer}
+        .fee-summary{background:#f8fafc;border-radius:12px;padding:14px;margin:12px 0}
+        .fee-summary .fee-row{display:flex;justify-content:space-between;font-size:14px;color:#64748b;margin-bottom:6px}
+        .fee-summary .fee-row:last-child{margin-bottom:0}
+        .fee-summary .fee-row .fee-value{font-weight:700;color:#1e293b}
+        .fee-summary .fee-row.highlight .fee-value{color:#0f9d58;font-size:16px}
+        .btn-primary-green{width:100%;padding:15px;background:#0f9d58;border:none;border-radius:12px;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+        .info-box{background:#f8fafc;border-radius:14px;padding:16px;margin-top:16px;display:flex;gap:12px;align-items:flex-start;border:1px solid #eef1f5}
+        .info-box .info-icon{width:36px;height:36px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;color:#0f9d58;font-size:16px;flex-shrink:0}
+        .info-box .info-text h5{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px}
+        .info-box .info-text p{font-size:13px;color:#64748b;line-height:1.5;margin:0}
+        .network-toggle{display:flex;gap:8px}
+        .network-btn{padding:8px 18px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;font-weight:700;color:#64748b;cursor:pointer}
+        .network-btn.active{background:#64748b;color:#fff;border-color:#64748b}
+
+        .invest-header{padding:16px 20px 8px}
+        .invest-header h2{font-size:22px;font-weight:800;color:#1e293b;margin-bottom:4px}
+        .invest-header p{font-size:14px;color:#64748b;margin-bottom:4px}
+        .invest-header .balance-tag{font-size:14px;color:#475569}
+        .invest-header .balance-tag strong{color:#1e293b}
+        .search-invest{margin:12px 20px;position:relative}
+        .search-invest input{width:100%;padding:14px 16px 14px 44px;border:none;border-radius:30px;background:#1e293b;color:#fff;font-size:14px;outline:none}
+        .search-invest input::placeholder{color:#94a3b8}
+        .search-invest i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px}
+        .bike-card{background:#fff;border-radius:18px;overflow:hidden;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #eef1f5}
+        .bike-card .bike-img{position:relative;width:100%;height:180px;background:#1e293b;overflow:hidden}
+        .bike-card .bike-img img{width:100%;height:100%;object-fit:cover}
+        .bike-card .bike-badge{position:absolute;top:12px;right:12px;background:#f59e0b;color:#fff;padding:4px 14px;border-radius:30px;font-size:11px;font-weight:700}
+        .bike-card .bike-body{padding:16px}
+        .bike-card .bike-name{font-size:18px;font-weight:800;color:#1e293b;margin-bottom:4px}
+        .bike-card .bike-desc{font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.4}
+        .bike-card .bike-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:#f8fafc;border-radius:12px;padding:12px 8px;margin-bottom:14px}
+        .bike-card .bike-stats .stat-item{text-align:center}
+        .bike-card .bike-stats .stat-item .si-label{font-size:10px;color:#94a3b8;margin-bottom:2px}
+        .bike-card .bike-stats .stat-item .si-value{font-size:13px;font-weight:700;color:#1e293b}
+        .bike-card .bike-footer{display:flex;justify-content:space-between;align-items:center}
+        .bike-card .bike-price{font-size:20px;font-weight:800;color:#f59e0b}
+        .btn-invest-now{background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-weight:700;font-size:14px}
+
+        .team-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 20px 16px}
+        .team-stat-card{background:#fff;border-radius:18px;padding:20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .team-stat-card .ts-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:8px}
+        .team-stat-card .ts-value{font-size:32px;font-weight:800}
+        .team-stat-card .ts-value.green{color:#0f9d58}
+        .team-stat-card .ts-value.blue{color:#2563eb}
+        .team-stat-card .ts-value.orange{color:#f59e0b}
+        .referral-card{background:#fff;border-radius:18px;padding:20px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .referral-card .ref-code-row{display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1.5px solid #e2e8f0;margin-bottom:12px}
+        .referral-card .ref-code-row .ref-code{font-size:22px;font-weight:800;color:#1e293b;letter-spacing:1px}
+        .btn-copy{background:#0f9d58;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer}
+        .referral-card .ref-link{font-size:13px;color:#64748b;word-break:break-all;margin-bottom:12px}
+        .btn-outline-full{width:100%;padding:12px;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;font-weight:700;font-size:14px;color:#1e293b;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+        .how-it-works{background:#e8f5e9;border-radius:18px;padding:20px;margin:0 20px 16px}
+        .how-it-works h4{font-size:16px;font-weight:800;color:#0f9d58;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+        .how-it-works p{font-size:14px;color:#475569;line-height:1.6;margin:0}
+
+        .profile-header-card{background:#fff;border-radius:18px;padding:20px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5;display:flex;align-items:center;gap:16px}
+        .profile-header-card .ph-avatar{width:64px;height:64px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:28px;color:#64748b;position:relative;flex-shrink:0}
+        .profile-header-card .ph-avatar .vip-badge{position:absolute;bottom:-2px;right:-2px;background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px;border:2px solid #fff}
+        .profile-header-card .ph-info .ph-name{font-size:18px;font-weight:800;color:#1e293b}
+        .profile-header-card .ph-info .ph-email{font-size:13px;color:#64748b;display:flex;align-items:center;gap:6px}
+        .profile-header-card .ph-info .ph-phone{font-size:13px;color:#64748b;display:flex;align-items:center;gap:6px}
+        .balance-card-profile{background:#fff;border-radius:18px;padding:20px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .balance-card-profile .bc-label{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px}
+        .balance-card-profile .bc-value{font-size:36px;font-weight:800;color:#f59e0b;margin-bottom:12px}
+        .balance-card-profile .promo-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .balance-card-profile .promo-row .promo-value{font-size:16px;font-weight:700;color:#f59e0b}
+        .balance-card-profile .promo-row .locked-tag{background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px}
+        .balance-card-profile .action-btns{display:flex;gap:10px}
+        .balance-card-profile .action-btns button{flex:1;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+        .btn-recharge{background:#0f9d58;color:#fff}
+        .btn-withdraw-orange{background:#f59e0b;color:#fff}
+        .menu-list{margin:0 20px 16px}
+        .menu-item{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer;border:1px solid #eef1f5}
+        .menu-item .mi-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .menu-item .mi-icon.blue{background:#dbeafe;color:#2563eb}
+        .menu-item .mi-icon.purple{background:#ede9fe;color:#7c3aed}
+        .menu-item .mi-icon.yellow{background:#fef3c7;color:#d97706}
+        .menu-item .mi-icon.teal{background:#ccfbf1;color:#0d9488}
+        .menu-item .mi-text{flex:1}
+        .menu-item .mi-text .mi-title{font-size:15px;font-weight:700;color:#1e293b}
+        .menu-item .mi-text .mi-sub{font-size:12px;color:#94a3b8}
+        .menu-item .mi-arrow{color:#cbd5e1;font-size:14px}
+        .voucher-card{background:#fff;border-radius:18px;padding:20px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,0,0,.03);border:1px solid #eef1f5}
+        .voucher-card .vc-title{font-size:15px;font-weight:800;color:#f59e0b;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .voucher-card .vc-input-row{display:flex;gap:8px;margin-bottom:12px}
+        .voucher-card .vc-input-row input{flex:1;padding:12px 16px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;color:#1e293b}
+        .voucher-card .vc-input-row button{background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:0 20px;font-weight:700;font-size:13px;cursor:pointer}
+        .telegram-box{background:#eef2ff;border-radius:12px;padding:14px;text-align:center}
+        .telegram-box p{font-size:13px;color:#4f46e5;margin-bottom:10px}
+        .btn-telegram{background:#4f46e5;color:#fff;border:none;border-radius:30px;padding:10px 24px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;width:100%;justify-content:center}
+        .btn-signout{width:calc(100% - 40px);margin:0 20px 20px;padding:16px;background:#fee2e2;color:#ef4444;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
+
+        /* Admin */
+        .admin-page{background:#0a0f1a !important;min-height:100vh;padding:20px 16px 40px;color:#e8e8f0;margin:0 -16px}
+        .admin-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+        .admin-header-left .admin-title{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:800;color:#fff;margin-bottom:8px}
+        .admin-header-left .admin-title i{color:#00d4ff;font-size:26px}
+        .admin-header-left .admin-badge{display:inline-block;background:#00d4ff;color:#0a0f1a;padding:8px 22px;border-radius:20px;font-size:13px;font-weight:700}
+        .admin-logout-btn{background:none;border:none;color:#ff4757;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 0}
+        .admin-logout-btn i{font-size:18px}
+        .admin-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+        .admin-stat-box{background:#0f1729;border:1px solid #1a2a4a;border-radius:14px;padding:20px 8px;text-align:center}
+        .admin-stat-box .asb-value{font-size:30px;font-weight:800;color:#00d4ff;line-height:1;margin-bottom:12px}
+        .admin-stat-box .asb-label{font-size:11px;color:#6c6c8a;text-transform:uppercase;letter-spacing:.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.3}
+        .admin-stat-box .asb-label i{font-size:16px;margin-bottom:2px}
+        .admin-quick-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px}
+        .admin-quick-btn{background:#0f1729;border:1px solid #1a2a4a;border-radius:14px;padding:14px 4px;text-align:center;cursor:pointer;color:#e8e8f0;font-family:inherit}
+        .admin-quick-btn .aqb-icon{font-size:22px;display:block;margin-bottom:6px;line-height:1}
+        .admin-quick-btn .aqb-label{font-size:11px;font-weight:600;color:#b0b0c8;line-height:1.2}
+        .admin-tabs-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+        .admin-tab-pill{background:#0f1729;border:1px solid #1a2a4a;color:#b0b0c8;padding:10px 18px;border-radius:30px;cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;display:flex;align-items:center;gap:8px}
+        .admin-tab-pill.active{background:#0f1729;border-color:#00d4ff;color:#fff;box-shadow:0 0 0 1px rgba(0,212,255,.3)}
+        .admin-tab-pill i{font-size:14px;color:#00d4ff}
+        .admin-card{background:#0f1729;border:1px solid #1a2a4a;border-radius:16px;padding:20px;margin-bottom:16px}
+        .admin-card-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:#fff;margin-bottom:16px}
+        .admin-card-title i{color:#00d4ff;font-size:20px}
+        .admin-card-title .count-badge{background:#ff4757;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:700;margin-left:auto}
+        .admin-user-row{background:#0a0f1a;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+        .admin-user-row .aur-info{flex:1;min-width:0}
+        .admin-user-row .aur-phone{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+        .admin-user-row .aur-phone i{color:#00d4ff;font-size:14px}
+        .admin-user-row .aur-meta{font-size:12px;color:#6c6c8a;line-height:1.6}
+        .admin-user-row .aur-meta .status-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px}
+        .admin-user-row .aur-meta .status-badge.suspended{background:rgba(255,71,87,.15);color:#ff4757}
+        .admin-user-row .aur-meta .status-badge.active{background:rgba(46,204,113,.15);color:#2ecc71}
+        .admin-user-row .aur-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0}
+        .aur-btn{width:36px;height:36px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff}
+        .aur-btn.add{background:#00d4ff}
+        .aur-btn.reset{background:#f59e0b}
+        .aur-btn.reply{background:#17a2b8}
+        .aur-btn.impersonate{background:#6c5ce7}
+        .aur-btn.suspend{background:#ff4757}
+        .aur-btn.unsuspend{background:#2ecc71}
+        .aur-btn.delete{background:#dc3545}
+        .admin-action-group{background:#0a0f1a;border:1px solid #1a2a4a;border-radius:14px;padding:18px;margin-bottom:14px}
+        .admin-action-group .aag-title{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;color:#fff;margin-bottom:14px}
+        .admin-action-group .aag-title i.add{color:#28a745}
+        .admin-action-group .aag-title i.approve{color:#ffc107}
+        .admin-input-label{display:block;font-size:14px;color:#6c6c8a;margin-bottom:6px;font-weight:500}
+        .admin-input{width:100%;padding:12px 14px;background:#0a0f1a;border:1.5px solid #1a2a4a;border-radius:10px;font-size:15px;color:#e8e8f0;outline:none;font-family:inherit}
+        .admin-chips-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+        .admin-chip{padding:8px 14px;background:#0a0f1a;border:1px solid #1a2a4a;border-radius:10px;color:#b0b0c8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+        .admin-submit-green{width:100%;padding:15px;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
+        .admin-submit-blue{width:100%;padding:15px;background:linear-gradient(135deg,#00d4ff,#0088cc);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
+        .admin-msg-area{background:#0a0f1a;border-radius:12px;padding:14px;min-height:180px;max-height:340px;overflow-y:auto;border:1px solid #1a2a4a;margin-bottom:12px}
+        .admin-msg-area p{color:#6c6c8a;font-size:14px;text-align:center;padding:30px 0}
+        .admin-msg-item{background:#0f1729;border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #1a2a4a}
+        .admin-msg-item .ami-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px}
+        .admin-msg-item .ami-head strong{color:#fff}
+        .admin-msg-item .ami-body{color:#b0b0c8;font-size:14px;line-height:1.5;word-wrap:break-word}
+        .admin-msg-item .ami-time{color:#6c6c8a;font-size:11px}
+
+        /* Bottom Nav */
+        .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:1000;width:100%;max-width:480px;margin:0 auto;background:#fff;border-top:1px solid #eef1f5;box-shadow:0 -2px 10px rgba(0,0,0,.04);padding:6px 10px 8px;height:64px;display:flex;align-items:center}
+        .bottom-nav .nav-items{display:flex;justify-content:space-around;align-items:center;list-style:none;padding:0;margin:0;width:100%;height:100%}
+        .bottom-nav .nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex:1;height:100%;border-radius:12px;position:relative}
+        .bottom-nav .nav-item.active{background:#e8f5e9}
+        .bottom-nav .nav-item .nav-icon{font-size:20px;color:#94a3b8;line-height:1}
+        .bottom-nav .nav-item.active .nav-icon{color:#0f9d58}
+        .bottom-nav .nav-item .nav-label{font-size:10px;font-weight:600;color:#94a3b8;margin-top:2px}
+        .bottom-nav .nav-item.active .nav-label{color:#0f9d58}
+        .bottom-nav .nav-center{position:relative;top:-18px;flex:0 0 60px}
+        .bottom-nav .nav-center .center-btn{width:56px;height:56px;background:#0f9d58;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;box-shadow:0 4px 12px rgba(15,157,88,.4);border:4px solid #fff;cursor:pointer}
+
+        .page{display:none;padding-bottom:20px}
+        .page.active{display:block}
+        #snackbar{visibility:hidden;min-width:250px;background:#1e293b;color:#fff;text-align:center;border-radius:12px;padding:14px 24px;position:fixed;z-index:99999;left:50%;bottom:50%;transform:translateX(-50%);font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+        #snackbar.show{visibility:visible}
+    </style>
+</head>
+<body>
+
+<div id="preloader">
+    <div class="preloader-icon">
+        <div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div>
+        <div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div>
+    </div>
+    <div class="preloader-title">Bovada Earns</div>
+    <div class="preloader-status">Loading<span class="dots"></span></div>
+</div>
+
+<div class="custom-alert-overlay" id="forgotPasswordAlert">
+    <div class="custom-alert-box">
+        <div class="ca-icon"><i class="fas fa-headset"></i></div>
+        <div class="ca-title">Password Reset</div>
+        <div class="ca-message">Contact support to reset your password</div>
+        <button class="ca-btn" onclick="openManagerTelegram()">Reset it here</button>
+    </div>
+</div>
+
+<div class="app-container" id="appContainer">
+
+    <!-- LOGIN -->
+    <div id="loginPage" class="page active">
+        <div class="auth-container">
+            <div class="auth-logo-top">
+                <div class="auth-logo-icon">
+                    <div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div>
+                    <div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div>
+                </div>
+            </div>
+            <div class="auth-title">Welcome Back</div>
+            <div class="auth-subtitle">Sign in to access your account, track earnings, and manage your investments.</div>
+            <div class="auth-form-group">
+                <label>Phone Number <span class="required">*</span></label>
+                <div class="auth-input-wrapper">
+                    <span class="prefix">+256</span>
+                    <input type="tel" id="loginPhone" placeholder="e.g., 712345678" />
+                </div>
+            </div>
+            <div class="auth-form-group">
+                <label>Password <span class="required">*</span></label>
+                <div class="auth-input-wrapper no-prefix">
+                    <input type="password" id="loginPassword" placeholder="Enter your password" />
+                    <button class="eye-btn" onclick="togglePassword('loginPassword')" type="button"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div class="remember-row">
+                <input type="checkbox" id="rememberMe" />
+                <label for="rememberMe">Remember phone & password</label>
+            </div>
+            <button class="auth-btn-dark" onclick="handleLogin()">Login</button>
+            <div id="loginError" class="auth-error-msg"></div>
+            <div class="auth-link-row">
+                <a class="forgot-link" onclick="forgotPassword()">Forgot your password? Reset it here!</a>
+                Don't have an account? <a onclick="showPage('registerPage')">Register here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerPage" class="page">
+        <div class="auth-container">
+            <div class="auth-logo-top">
+                <div class="auth-logo-icon">
+                    <div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div>
+                    <div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div>
+                </div>
+            </div>
+            <div class="auth-title">Start Your Investment Journey</div>
+            <div class="auth-subtitle">Create your account today and start investing with Bovada Earns. Invest to start earning daily returns on your capital.</div>
+            <div class="auth-form-group">
+                <label>Phone Number <span class="required">*</span></label>
+                <div class="auth-input-wrapper">
+                    <span class="prefix">+256</span>
+                    <input type="tel" id="registerPhone" placeholder="e.g., 712345678" />
+                </div>
+            </div>
+            <div class="auth-form-group">
+                <label>Password <span class="required">*</span></label>
+                <div class="auth-input-wrapper no-prefix">
+                    <input type="password" id="registerPassword" placeholder="Enter new password" />
+                    <button class="eye-btn" onclick="togglePassword('registerPassword')" type="button"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div class="auth-form-group">
+                <label>Confirm Password <span class="required">*</span></label>
+                <div class="auth-input-wrapper no-prefix">
+                    <input type="password" id="registerConfirmPassword" placeholder="Re-enter password" />
+                    <button class="eye-btn" onclick="togglePassword('registerConfirmPassword')" type="button"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div class="auth-form-group">
+                <label>Referral Code <span class="optional">(optional)</span></label>
+                <div class="auth-input-wrapper no-prefix">
+                    <input type="text" id="registerReferral" placeholder="Enter referral code if any" />
+                </div>
+            </div>
+            <button class="auth-btn-dark" onclick="handleRegister()">Register</button>
+            <div id="registerError" class="auth-error-msg"></div>
+            <div id="registerSuccess" class="auth-success-msg"></div>
+            <div class="auth-link-row">Already have an account? <a onclick="showPage('loginPage')">Login here</a></div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div class="dashboard-welcome">
+            <div class="greeting"><span class="wave">👋</span><span>Hello <span id="dashGreeting">0707256946</span>,</span></div>
+            <div class="sub-text">Welcome to your dashboard! Monitor investments, track progress & enjoy daily profits.</div>
+            <div class="action-row">
+                <button class="btn-dark-pill" onclick="showPage('propertiesPage')"><i class="fas fa-bolt"></i> Invest</button>
+                <button class="btn-green-pill" onclick="copyReferralLink()"><i class="fas fa-copy"></i> Copy Referral Link</button>
+            </div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon yellow"><i class="fas fa-wallet"></i></div><div class="stat-label">Balance</div><div class="stat-value"><span id="dashBalance">5,000</span> <span>UGX</span></div></div>
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-chart-line"></i></div><div class="stat-label">Revenue</div><div class="stat-value"><span id="dashRevenue">10,000</span> <span>UGX</span></div></div>
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-coins"></i></div><div class="stat-label">Capital</div><div class="stat-value"><span id="dashCapital">25,000</span> <span>UGX</span></div></div>
+            <div class="stat-card"><div class="stat-icon teal"><i class="fas fa-money-bill-wave"></i></div><div class="stat-label">Withdraws</div><div class="stat-value"><span id="dashWithdraws">0</span> <span>UGX</span></div></div>
+        </div>
+        <div class="section-card">
+            <div class="section-title">Revenue</div>
+            <div class="revenue-row"><div class="rev-left"><div class="rev-dot green"></div><div class="rev-label">Total Commissions</div></div><div class="rev-value" id="dashCommissions">0 UGX</div></div>
+            <div class="revenue-row"><div class="rev-left"><div class="rev-dot yellow"></div><div class="rev-label">Total Bonuses</div></div><div class="rev-value" id="dashBonuses">10,000 UGX</div></div>
+        </div>
+        <div class="section-card">
+            <div class="section-title">Quick Actions</div>
+            <div class="quick-grid">
+                <div class="quick-item" onclick="showPage('depositPage')"><div class="quick-icon green"><i class="fas fa-arrow-down"></i></div><div class="quick-label">Deposit</div></div>
+                <div class="quick-item" onclick="showPage('withdrawPage')"><div class="quick-icon red"><i class="fas fa-arrow-up"></i></div><div class="quick-label">Withdraw</div></div>
+                <div class="quick-item" onclick="showPage('referralPage')"><div class="quick-icon blue"><i class="fas fa-users"></i></div><div class="quick-label">Team</div></div>
+                <div class="quick-item" onclick="showPage('propertiesPage')"><div class="quick-icon yellow"><i class="fas fa-sync-alt"></i></div><div class="quick-label">Invest</div></div>
+                <div class="quick-item" onclick="showPage('myRentalsPage')"><div class="quick-icon green"><i class="fas fa-lock"></i></div><div class="quick-label">My Bikes</div></div>
+                <div class="quick-item" onclick="showPage('withdrawHistoryPage')"><div class="quick-icon purple"><i class="fas fa-history"></i></div><div class="quick-label">History</div></div>
+                <div class="quick-item" onclick="showPage('propertiesPage')"><div class="quick-icon green"><i class="fas fa-th-large"></i></div><div class="quick-label">Packages</div></div>
+                <div class="quick-item" onclick="showPage('supportPage')"><div class="quick-icon blue"><i class="fas fa-headset"></i></div><div class="quick-label">Support</div></div>
+                <div class="quick-item" onclick="contactManager()"><div class="quick-icon teal"><i class="fab fa-whatsapp"></i></div><div class="quick-label">WhatsApp</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVEST -->
+    <div id="propertiesPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div class="invest-header">
+            <h2>Boda Bike Jobs</h2>
+            <p>Every job pays daily returns for the full duration</p>
+            <div class="balance-tag">Balance: <strong id="investBalance">UGX 5,000</strong></div>
+        </div>
+        <div class="search-invest">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search packages..." id="propertySearch" />
+        </div>
+        <div id="propertyGrid"></div>
+    </div>
+
+    <!-- WITHDRAW -->
+    <div id="withdrawPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div style="padding:0 20px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <button onclick="showPage('dashboardPage')" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;color:#475569;"><i class="fas fa-arrow-left"></i></button>
+                <div><h2 style="font-size:20px;font-weight:800;color:#1e293b;margin:0;">Withdraw Funds</h2><p style="font-size:13px;color:#94a3b8;margin:0;">Withdraw your earnings directly to Mobile Money</p></div>
+            </div>
+        </div>
+        <div class="withdraw-balance">
+            <div class="wb-icon"><i class="fas fa-wallet"></i></div>
+            <div><div class="wb-label">Available Balance</div><div class="wb-value" id="withdrawBalanceDisplay">UGX 5,000</div></div>
+        </div>
+        <div class="withdraw-form">
+            <div class="form-label-row"><span class="label">Withdraw Amount</span><span class="hint">Min: 5,000 UGX</span></div>
+            <div class="input-group-custom"><span class="prefix">UGX</span><input type="number" id="withdrawAmount" placeholder="e.g. 20000" oninput="calculateWithdrawAmount()" /></div>
+            <div style="font-size:13px;color:#64748b;margin-top:8px;">Quick Select:</div>
+            <div class="quick-select-row">
+                <button class="quick-select-btn" onclick="setWithdrawAmount(5000)">5,000</button>
+                <button class="quick-select-btn" onclick="setWithdrawAmount(10000)">10,000</button>
+                <button class="quick-select-btn" onclick="setWithdrawAmount(20000)">20,000</button>
+                <button class="quick-select-btn" onclick="setWithdrawAmount(50000)">50,000</button>
+                <button class="quick-select-btn" onclick="setWithdrawAmount(100000)">100,000</button>
+                <button class="quick-select-btn" onclick="setWithdrawAmount('max')">Max All</button>
+            </div>
+            <div class="fee-summary" id="feeSummary" style="display:none;">
+                <div class="fee-row"><span>Fee (9%)</span><span class="fee-value" id="feeDisplay">UGX 1,000</span></div>
+                <div class="fee-row highlight"><span style="font-weight:700;color:#0f9d58;">You receive</span><span class="fee-value" id="receiveDisplay">UGX 20,000</span></div>
+            </div>
+            <div class="form-label-row" style="margin-top:16px;">
+                <span class="label">Receiving Mobile Number</span>
+                <div class="network-toggle">
+                    <button class="network-btn active" id="mtnBtn" onclick="selectNetwork('mtn')">MTN</button>
+                    <button class="network-btn" id="airtelBtn" onclick="selectNetwork('airtel')">Airtel</button>
+                </div>
+            </div>
+            <div class="input-group-custom">
+                <span class="prefix" style="background:transparent;border-right:none;padding-right:0;"><i class="fas fa-phone" style="color:#94a3b8;"></i></span>
+                <input type="tel" id="withdrawPhone" placeholder="712345678" />
+            </div>
+            <button class="btn-primary-green" style="margin-top:16px;" onclick="handleWithdraw()">Request Cashout <i class="fas fa-arrow-right"></i></button>
+            <div id="withdrawError" style="display:none;color:#ef4444;font-size:13px;margin-top:10px;text-align:center;font-weight:600;"></div>
+        </div>
+        <div class="info-box" style="margin:0 20px 16px;">
+            <div class="info-icon"><i class="fas fa-clock"></i></div>
+            <div class="info-text"><h5>Fast Automated Disbursement</h5><p>Withdrawal requests are processed promptly. Please verify your phone number before confirming your request to avoid delays.</p></div>
+        </div>
+    </div>
+
+    <!-- TEAM -->
+    <div id="referralPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div class="team-stats">
+            <div class="team-stat-card"><div class="ts-label">Direct Team</div><div class="ts-value green" id="totalReferrals">0</div></div>
+            <div class="team-stat-card"><div class="ts-label">With Rentals</div><div class="ts-value blue" id="withRentals">0</div></div>
+        </div>
+        <div class="section-card" style="text-align:center;">
+            <div class="ts-label" style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:8px;">Total Commission Earned</div>
+            <div class="ts-value orange" style="font-size:36px;font-weight:800;color:#f59e0b;" id="commissionEarned">0</div>
+            <div style="font-size:13px;color:#94a3b8;margin-top:4px;">UGX from 30% referrals</div>
+        </div>
+        <div class="referral-card">
+            <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i class="fas fa-link" style="color:#0f9d58;"></i> Your Referral Code</div>
+            <div class="ref-code-row"><span class="ref-code" id="refCode">6JPO491</span><button class="btn-copy" onclick="copyReferralCode()"><i class="fas fa-copy"></i> Copy</button></div>
+            <div class="ref-link" id="refLink">https://bovada-earns.top/?ref=6JPO491</div>
+            <button class="btn-outline-full" onclick="copyReferralLink()"><i class="fas fa-copy"></i> Copy Invite Link</button>
+        </div>
+        <div class="how-it-works">
+            <h4><i class="fas fa-info-circle"></i> How Team Earnings Work</h4>
+            <p>Share your referral code or link. When someone joins and invests in a package, you earn a <strong>30% commission</strong> instantly on their purchase.</p>
+        </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="profilePage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div class="profile-header-card">
+            <div class="ph-avatar"><i class="fas fa-user"></i><span class="vip-badge">VIP</span></div>
+            <div class="ph-info">
+                <div class="ph-name" id="profDisplayPhone">0707256946</div>
+                <div class="ph-email"><i class="fas fa-envelope"></i> account@bovada.earns</div>
+                <div class="ph-phone"><i class="fas fa-phone"></i> 0707256946</div>
+            </div>
+        </div>
+        <div class="balance-card-profile">
+            <div class="bc-label">Available Cash Balance</div>
+            <div class="bc-value" id="profBalance">UGX 5,000</div>
+            <div class="promo-row">
+                <div><div class="bc-label" style="margin-bottom:2px;">Promo Earnings</div><div class="promo-value" id="profPromo">UGX 10,000</div></div>
+                <span class="locked-tag">LOCKED CREDITS</span>
+            </div>
+            <div class="action-btns">
+                <button class="btn-recharge" onclick="showPage('depositPage')"><i class="fas fa-arrow-up"></i> Recharge</button>
+                <button class="btn-withdraw-orange" onclick="showPage('withdrawPage')"><i class="fas fa-arrow-down"></i> Withdraw</button>
+            </div>
+        </div>
+        <div class="menu-list">
+            <div class="menu-item" onclick="showPage('myRentalsPage')">
+                <div class="mi-icon purple"><i class="fas fa-chart-line"></i></div>
+                <div class="mi-text"><div class="mi-title">Review Active Yielding Products</div><div class="mi-sub">Collect contract rewards and buy new packages</div></div>
+                <div class="mi-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        <div class="voucher-card">
+            <div class="vc-title"><i class="fas fa-gift"></i> Redeem VIP Gift Code</div>
+            <div class="vc-input-row"><input type="text" id="voucherCode" placeholder="Enter voucher code" oninput="checkVoucherStatus()" /><button onclick="redeemVoucher()">Redeem</button></div>
+            <div id="voucherHint" style="font-size:12px;font-weight:600;margin-top:6px;min-height:16px;"></div>
+            <div class="telegram-box" style="margin-top:12px;">
+                <p>Join our Telegram Group to get gift codes given out every day to earn bonuses</p>
+                <button class="btn-telegram" onclick="openTelegram()"><i class="fab fa-telegram-plane"></i> Join Telegram</button>
+            </div>
+        </div>
+        <div class="menu-list">
+            <div class="menu-item" onclick="showPage('changePasswordPage')"><div class="mi-icon blue"><i class="fas fa-user"></i></div><div class="mi-text"><div class="mi-title">Personal Information</div><div class="mi-sub">Manage your credentials</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
+            <div class="menu-item" onclick="showPage('changePasswordPage')"><div class="mi-icon purple"><i class="fas fa-shield-alt"></i></div><div class="mi-text"><div class="mi-title">Security & Passcode</div><div class="mi-sub">Secure wallet authorization</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
+            <div class="menu-item" onclick="showPage('supportPage')"><div class="mi-icon teal"><i class="fas fa-headset"></i></div><div class="mi-text"><div class="mi-title">Premium Support Desk</div><div class="mi-sub">24/7 interactive care</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
+            <div class="menu-item" onclick="showPage('referralPage')"><div class="mi-icon yellow"><i class="fas fa-users"></i></div><div class="mi-text"><div class="mi-title">Team & Referrals</div><div class="mi-sub">Invite friends and earn</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
+        </div>
+        <button class="btn-signout" onclick="handleLogout()">Sign Out of Account</button>
+    </div>
+
+    <!-- DEPOSIT -->
+    <div id="depositPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div style="padding:0 20px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <button onclick="showPage('dashboardPage')" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;color:#475569;"><i class="fas fa-arrow-left"></i></button>
+                <div><h2 style="font-size:20px;font-weight:800;color:#1e293b;margin:0;">Recharge</h2><p style="font-size:13px;color:#94a3b8;margin:0;">Automatic Mobile Money (MarzPay)</p></div>
+            </div>
+        </div>
+        <div id="depositStep1">
+            <div class="withdraw-form" style="margin-top:0;">
+                <div class="form-label-row"><span class="label">Deposit Amount</span><span class="hint">Min: 10,000 UGX</span></div>
+                <div class="input-group-custom"><span class="prefix">UGX</span><input type="number" id="depositAmount" placeholder="e.g. 50000" oninput="updateDepositFeePreview()" min="10000" step="1000" /></div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:6px;">Minimum deposit: <strong style="color:#0f9d58;">10,000 UGX</strong> • Fee: <strong style="color:#f59e0b;">5%</strong></div>
+                <div class="quick-select-row">
+                    <button class="quick-select-btn" onclick="setDepositAmount(10000)">10,000</button>
+                    <button class="quick-select-btn" onclick="setDepositAmount(20000)">20,000</button>
+                    <button class="quick-select-btn" onclick="setDepositAmount(30000)">30,000</button>
+                    <button class="quick-select-btn" onclick="setDepositAmount(50000)">50,000</button>
+                    <button class="quick-select-btn" onclick="setDepositAmount(100000)">100,000</button>
+                    <button class="quick-select-btn" onclick="setDepositAmount(200000)">200,000</button>
+                    <button class="quick-select-btn" onclick="setDepositAmount(500000)">500,000</button>
+                </div>
+                <div class="fee-summary" id="depositFeePreview" style="display:none;">
+                    <div class="fee-row"><span>You pay</span><span class="fee-value" id="previewPay">0 UGX</span></div>
+                    <div class="fee-row"><span>Fee (5%)</span><span class="fee-value" id="previewFee">0 UGX</span></div>
+                    <div class="fee-row highlight"><span style="font-weight:700;color:#0f9d58;">Credited to account</span><span class="fee-value" id="previewNet">0 UGX</span></div>
+                </div>
+                <div class="form-label-row" style="margin-top:16px;"><span class="label">Mobile Money Number</span></div>
+                <div class="input-group-custom">
+                    <span class="prefix" style="background:transparent;border-right:none;padding-right:0;"><i class="fas fa-phone" style="color:#94a3b8;"></i></span>
+                    <input type="tel" id="payerPhoneNumber" placeholder="712345678 (MTN or Airtel)" />
+                </div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:6px;">Enter the number that will receive the payment prompt (MTN or Airtel).</div>
+                <button class="btn-primary-green" id="payWithMarzBtn" style="margin-top:16px;" onclick="initiateMarzDeposit()"><i class="fas fa-mobile-alt"></i> Pay with Mobile Money</button>
+                <div id="depositError" style="display:none;color:#ef4444;font-size:13px;margin-top:10px;text-align:center;font-weight:600;background:#fef2f2;padding:10px;border-radius:8px;border:1px solid #fecaca;"></div>
+            </div>
+            <div class="info-box" style="margin:0 20px 16px;">
+                <div class="info-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="info-text"><h5>Instant & Secure Payment</h5><p>After clicking <strong>Proceed</strong>, check your phone for a PIN prompt to authorize the transaction. Your balance will update automatically upon completion.</p></div>
+            </div>
+        </div>
+        <div id="depositStep2" style="display:none;">
+            <div class="withdraw-form" style="text-align:center;">
+                <div id="depositWaiting" style="display:block;">
+                    <div style="font-size:48px;margin-bottom:12px;">📲</div>
+                    <h3 style="font-weight:800;font-size:18px;margin-bottom:8px;color:#1e293b;">Approve on your phone</h3>
+                    <p style="font-size:14px;color:#64748b;margin-bottom:16px;">A payment prompt has been sent to <strong id="waitingPhone" style="color:#0f9d58;"></strong>. Open the MTN/Airtel prompt and enter your PIN to approve.</p>
+                    <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #eef1f5;text-align:left;">
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Amount</span><span style="font-weight:600;font-size:13px;color:#1e293b;" id="waitingAmount">—</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Fee (5%)</span><span style="font-weight:600;font-size:13px;color:#f59e0b;" id="waitingFee">—</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">You will receive</span><span style="font-weight:700;font-size:14px;color:#0f9d58;" id="waitingNet">—</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Status</span><span style="font-weight:600;font-size:13px;color:#f59e0b;" id="waitingStatus">Waiting for approval…</span></div>
+                    </div>
+                    <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;margin-bottom:12px;"></div>
+                    <p style="font-size:12px;color:#94a3b8;">Checking payment status automatically…</p>
+                    <button class="btn-outline-full" onclick="cancelMarzDeposit()" style="margin-top:12px;">Cancel / Try again</button>
+                </div>
+                <div id="depositSuccessBox" style="display:none;">
+                    <div style="font-size:48px;margin-bottom:12px;">✅</div>
+                    <h3 style="font-weight:800;font-size:18px;margin-bottom:8px;color:#0f9d58;">Payment Successful!</h3>
+                    <p style="font-size:14px;color:#64748b;margin-bottom:12px;">UGX <strong id="successNet" style="color:#0f9d58;"></strong> has been added to your account.</p>
+                    <button class="btn-primary-green" onclick="showPage('dashboardPage')" style="width:100%;">Go to Dashboard</button>
+                </div>
+                <div id="depositFailedBox" style="display:none;">
+                    <div style="font-size:48px;margin-bottom:12px;">❌</div>
+                    <h3 style="font-weight:800;font-size:18px;margin-bottom:8px;color:#ef4444;">Payment Failed</h3>
+                    <p style="font-size:14px;color:#64748b;margin-bottom:12px;" id="failedMessage">The payment was declined or timed out.</p>
+                    <button class="btn-primary-green" onclick="showDepositStep1()" style="width:100%;">Try Again</button>
+                </div>
+            </div>
+        </div>
+        <div class="section-card">
+            <div class="section-title">📊 Transaction History</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                <button class="quick-select-btn" onclick="filterTransactions('all')" style="background:#0f9d58;color:white;border-color:#0f9d58;font-size:11px;padding:6px 14px;">All</button>
+                <button class="quick-select-btn" onclick="filterTransactions('deposit')" style="font-size:11px;padding:6px 14px;">Recharges</button>
+                <button class="quick-select-btn" onclick="filterTransactions('earning')" style="font-size:11px;padding:6px 14px;">Earnings</button>
+                <button class="quick-select-btn" onclick="filterTransactions('withdrawal')" style="font-size:11px;padding:6px 14px;">Withdrawals</button>
+                <button class="quick-select-btn" onclick="filterTransactions('pending')" style="font-size:11px;padding:6px 14px;">Pending</button>
+            </div>
+            <div id="transactionList"><p style="color:#94a3b8;text-align:center;padding:20px 0;font-size:14px;">No transactions yet</p></div>
+        </div>
+    </div>
+
+    <!-- MY RENTALS -->
+    <div id="myRentalsPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div style="padding:0 20px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <button onclick="showPage('dashboardPage')" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;color:#475569;"><i class="fas fa-arrow-left"></i></button>
+                <div><h2 style="font-size:20px;font-weight:800;color:#1e293b;margin:0;">My Bikes</h2><p style="font-size:13px;color:#94a3b8;margin:0;">Your active investments</p></div>
+            </div>
+        </div>
+        <div id="myRentalsList" style="padding:0 20px;"></div>
+    </div>
+
+    <!-- WITHDRAW HISTORY -->
+    <div id="withdrawHistoryPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div style="padding:0 20px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <button onclick="showPage('profilePage')" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;color:#475569;"><i class="fas fa-arrow-left"></i></button>
+                <div><h2 style="font-size:20px;font-weight:800;color:#1e293b;margin:0;">Withdraw History</h2><p style="font-size:13px;color:#94a3b8;margin:0;">All your withdrawal requests</p></div>
+            </div>
+        </div>
+        <div id="withdrawHistoryList" style="padding:0 20px;"></div>
+    </div>
+
+    <!-- DEPOSIT HISTORY -->
+    <div id="depositHistoryPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div style="padding:0 20px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <button onclick="showPage('profilePage')" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;color:#475569;"><i class="fas fa-arrow-left"></i></button>
+                <div><h2 style="font-size:20px;font-weight:800;color:#1e293b;margin:0;">Recharge History</h2><p style="font-size:13px;color:#94a3b8;margin:0;">All your recharge transactions</p></div>
+            </div>
+        </div>
+        <div id="depositHistoryList" style="padding:0 20px;"></div>
+    </div>
+
+    <!-- CHANGE PASSWORD -->
+    <div id="changePasswordPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div class="withdraw-form">
+            <div class="auth-form-group"><label>Current Password</label><div class="auth-input-wrapper no-prefix"><input type="password" id="currentPassword" placeholder="Enter current password" /></div></div>
+            <div class="auth-form-group"><label>New Password</label><div class="auth-input-wrapper no-prefix"><input type="password" id="newPassword" placeholder="Enter new password" /></div></div>
+            <div class="auth-form-group"><label>Confirm New Password</label><div class="auth-input-wrapper no-prefix"><input type="password" id="confirmNewPassword" placeholder="Confirm new password" /></div></div>
+            <button class="btn-primary-green" onclick="handleChangePassword()"><i class="fas fa-check"></i> Update Password</button>
+            <div id="passwordError" style="display:none;color:#ef4444;font-size:13px;margin-top:10px;text-align:center;"></div>
+            <div id="passwordSuccess" style="display:none;color:#0f9d58;font-size:13px;margin-top:10px;text-align:center;"></div>
+        </div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div id="supportPage" class="page">
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-logo"><div class="bar bar-1"></div><div class="bar bar-2"></div><div class="bar bar-3"></div><div class="arrow-line"></div><div class="arrow-head"></div><div class="coin">$</div></div>
+                <div class="brand-text">Bovada <span>Earns</span></div>
+            </div>
+            <div class="verified-avatar" onclick="showPage('profilePage')">
+                <div class="va-ring"></div><div class="va-inner"><i class="fas fa-user"></i></div>
+                <div class="va-check"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1 L14.4 3.6 L17.8 3.1 L18.9 6.4 L22.2 7.6 L21.6 11 L24 13.4 L21.6 15.8 L22.2 19.2 L18.9 20.4 L17.8 23.7 L14.4 23.2 L12 25.8 L9.6 23.2 L6.2 23.7 L5.1 20.4 L1.8 19.2 L2.4 15.8 L0 13.4 L2.4 11 L1.8 7.6 L5.1 6.4 L6.2 3.1 L9.6 3.6 Z" fill="#3b82f6"/><path d="M10.6 17.2 L7.4 14 L8.8 12.6 L10.6 14.4 L15.2 9.8 L16.6 11.2 Z" fill="#ffffff"/></svg></div>
+            </div>
+        </div>
+        <div class="withdraw-form">
+            <div id="supportMessageArea" style="background:#f8fafc;border-radius:12px;padding:12px;min-height:200px;max-height:300px;overflow-y:auto;border:1.5px solid #e2e8f0;">
+                <p style="color:#94a3b8;text-align:center;padding:20px 0;font-size:14px;">No messages yet. Send a message to the admin.</p>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+                <input type="text" id="supportInput" placeholder="Type your message..." style="flex:1;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;color:#1e293b;" />
+                <button onclick="sendSupportMessage()" style="padding:12px 20px;background:#0f9d58;border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="adminPage" class="page">
+        <div class="admin-page">
+            <div class="admin-header">
+                <div class="admin-header-left">
+                    <div class="admin-title"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+                    <span class="admin-badge">Administrator</span>
+                </div>
+                <button class="admin-logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            <div class="admin-stats-row">
+                <div class="admin-stat-box"><div class="asb-value" id="adminTotalUsers">0</div><div class="asb-label"><i class="fas fa-users"></i> TOTAL<br>USERS</div></div>
+                <div class="admin-stat-box"><div class="asb-value" id="adminTotalDeposits">0</div><div class="asb-label"><i class="fas fa-coins"></i> TOTAL<br>RECHARGES</div></div>
+                <div class="admin-stat-box"><div class="asb-value" id="adminPendingWithdrawals">0</div><div class="asb-label"><i class="fas fa-clock"></i> PENDING<br>WITHDRAWALS</div></div>
+            </div>
+            <div class="admin-quick-row">
+                <button class="admin-quick-btn" onclick="adminRefreshData()"><span class="aqb-icon">🔄</span><span class="aqb-label">Refresh</span></button>
+                <button class="admin-quick-btn" onclick="document.getElementById('adminUserPhone').focus()"><span class="aqb-icon">➕</span><span class="aqb-label">Add<br>Balance</span></button>
+                <button class="admin-quick-btn" onclick="document.getElementById('adminApprovePhone').focus()"><span class="aqb-icon">✅</span><span class="aqb-label">Approve<br>WD</span></button>
+                <button class="admin-quick-btn" onclick="adminBroadcastToAll()"><span class="aqb-icon">📢</span><span class="aqb-label">Broadcast</span></button>
+                <button class="admin-quick-btn" onclick="syncToCloud()"><span class="aqb-icon">☁️</span><span class="aqb-label">Sync<br>Cloud</span></button>
+            </div>
+            <div class="admin-tabs-row">
+                <button class="admin-tab-pill active" data-tab="users" onclick="adminSwitchTab('users')"><i class="fas fa-users"></i> Users</button>
+                <button class="admin-tab-pill" data-tab="deposits" onclick="adminSwitchTab('deposits')"><i class="fas fa-coins"></i> Recharges</button>
+                <button class="admin-tab-pill" data-tab="withdrawals" onclick="adminSwitchTab('withdrawals')"><i class="fas fa-arrow-up"></i> Withdrawals</button>
+                <button class="admin-tab-pill" data-tab="messages" onclick="adminSwitchTab('messages')"><i class="fas fa-envelope"></i> Messages</button>
+                <button class="admin-tab-pill" data-tab="support" onclick="adminSwitchTab('support')"><i class="fas fa-headset"></i> Support</button>
+                <button class="admin-tab-pill" data-tab="transactions" onclick="adminSwitchTab('transactions')"><i class="fas fa-list"></i> Transactions</button>
+                <button class="admin-tab-pill" data-tab="rentals" onclick="adminSwitchTab('rentals')"><i class="fas fa-motorcycle"></i> AI Bikes</button>
+                <button class="admin-tab-pill" data-tab="vouchers" onclick="adminSwitchTab('vouchers')"><i class="fas fa-gift"></i> Gift Codes</button>
+            </div>
+            <div id="adminUsersTab" class="admin-card"><div class="admin-card-title"><i class="fas fa-users"></i> All Users <span class="count-badge" id="userCountBadge">0</span></div><div id="adminUserList"></div></div>
+            <div id="adminDepositsTab" class="admin-card" style="display:none;"><div class="admin-card-title"><i class="fas fa-coins"></i> Pending Recharges <span class="count-badge" id="depCountBadge">0</span></div><div id="adminDepositList"></div></div>
+            <div id="adminWithdrawalsTab" class="admin-card" style="display:none;"><div class="admin-card-title"><i class="fas fa-arrow-up"></i> Pending Withdrawals <span class="count-badge" id="wdCountBadge">0</span></div><div id="adminWithdrawalList"></div></div>
+            <div id="adminMessagesTab" class="admin-card" style="display:none;">
+                <div class="admin-card-title"><i class="fas fa-envelope"></i> Messages <span class="count-badge" id="msgCountBadge">0</span></div>
+                <div class="admin-msg-area" id="adminMessageArea"><p>No messages yet. Send a reply to users.</p></div>
+                <label class="admin-input-label">Quick Reply</label>
+                <input type="text" id="adminMessageInput" class="admin-input" placeholder="Type your message..." style="margin-bottom:8px;" />
+                <input type="text" id="adminReplyPhone" class="admin-input" placeholder="User phone" style="margin-bottom:8px;" />
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="admin-submit-blue" style="flex:1;margin-top:0;" onclick="adminSendPrivateReply()"><i class="fas fa-reply"></i> Reply</button>
+                    <button class="admin-submit-green" style="flex:1;margin-top:0;" onclick="adminSendBroadcast()"><i class="fas fa-bullhorn"></i> Broadcast</button>
+                </div>
+            </div>
+            <div id="adminSupportTab" class="admin-card" style="display:none;">
+                <div class="admin-card-title"><i class="fas fa-headset"></i> Support Messages <span class="count-badge" id="supportCountBadge">0</span></div>
+                <div class="admin-msg-area" id="adminSupportArea"><p>No support messages from users.</p></div>
+                <label class="admin-input-label">Reply to Support Message</label>
+                <input type="text" id="adminSupportInput" class="admin-input" placeholder="Type your reply..." style="margin-bottom:8px;" />
+                <input type="text" id="adminSupportPhone" class="admin-input" placeholder="User phone" style="margin-bottom:8px;" />
+                <button class="admin-submit-blue" onclick="adminSendSupportReply()"><i class="fas fa-reply"></i> Reply to User</button>
+            </div>
+            <div id="adminTransactionsTab" class="admin-card" style="display:none;"><div class="admin-card-title"><i class="fas fa-list"></i> All Transactions</div><div id="adminTransactionList"><p style="color:#6c6c8a;text-align:center;padding:30px 0;">No transactions yet</p></div></div>
+            <div id="adminRentalsTab" class="admin-card" style="display:none;"><div class="admin-card-title"><i class="fas fa-motorcycle"></i> All AI Bikes</div><div id="adminRentalList"><p style="color:#6c6c8a;text-align:center;padding:30px 0;">No AI Bikes yet</p></div></div>
+            <div id="adminVouchersTab" class="admin-card" style="display:none;">
+                <div class="admin-card-title"><i class="fas fa-gift"></i> Redeem Gift Codes <span class="count-badge" id="voucherCountBadge">0</span></div>
+
+                <div class="admin-action-group">
+                    <div class="aag-title"><i class="fas fa-plus-circle add"></i> Generate New Gift Code</div>
+                    <label class="admin-input-label">Reward Amount (UGX)</label>
+                    <input type="number" id="adminVoucherAmount" class="admin-input" placeholder="e.g. 5000" />
+                    <div class="admin-chips-row">
+                        <button class="admin-chip" onclick="document.getElementById('adminVoucherAmount').value=1000">1K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminVoucherAmount').value=2000">2K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminVoucherAmount').value=5000">5K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminVoucherAmount').value=10000">10K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminVoucherAmount').value=20000">20K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminVoucherAmount').value=50000">50K</button>
+                    </div>
+                    <button class="admin-submit-green" onclick="adminGenerateVoucher()"><i class="fas fa-magic"></i> Generate Code</button>
+                    <div id="adminVoucherMessage" style="display:none;color:#2ecc71;font-size:13px;margin-top:10px;text-align:center;"></div>
+                </div>
+
+                <div class="admin-action-group">
+                    <div class="aag-title"><i class="fas fa-list"></i> All Gift Codes</div>
+                    <div id="adminVoucherList"></div>
+                </div>
+            </div>
+            <div class="admin-card">
+                <div class="admin-card-title"><i class="fas fa-tools"></i> Admin Actions</div>
+                <div class="admin-action-group">
+                    <div class="aag-title"><i class="fas fa-plus-circle add"></i> Add Balance to User</div>
+                    <label class="admin-input-label">User Phone Number</label>
+                    <input type="text" id="adminUserPhone" class="admin-input" placeholder="e.g., 712345678" oninput="adminCheckUserExists(this.value)" />
+                    <div id="adminUserCheck" style="font-size:13px;margin-top:6px;min-height:18px;"></div>
+                    <label class="admin-input-label" style="margin-top:12px;">Amount (UGX)</label>
+                    <input type="number" id="adminAddAmount" class="admin-input" placeholder="Enter amount" />
+                    <div class="admin-chips-row">
+                        <button class="admin-chip" onclick="document.getElementById('adminAddAmount').value=10000">10K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminAddAmount').value=50000">50K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminAddAmount').value=100000">100K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminAddAmount').value=500000">500K</button>
+                        <button class="admin-chip" onclick="document.getElementById('adminAddAmount').value=1000000">1M</button>
+                    </div>
+                    <button class="admin-submit-green" onclick="adminAddBalance()"><i class="fas fa-plus"></i> Add Balance</button>
+                    <div id="adminAddMessage" style="display:none;color:#2ecc71;font-size:13px;margin-top:10px;text-align:center;"></div>
+                </div>
+                <div class="admin-action-group">
+                    <div class="aag-title"><i class="fas fa-check-circle approve"></i> Approve Withdrawal</div>
+                    <label class="admin-input-label">User Phone Number</label>
+                    <input type="text" id="adminApprovePhone" class="admin-input" placeholder="e.g., 712345678" />
+                    <button class="admin-submit-blue" onclick="adminApproveWithdrawal()"><i class="fas fa-check"></i> Approve Withdrawal</button>
+                    <div id="adminApproveMessage" style="display:none;color:#2ecc71;font-size:13px;margin-top:10px;text-align:center;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV — HIDDEN BY DEFAULT -->
+    <nav class="bottom-nav" id="bottomNav" style="display:none;">
+        <ul class="nav-items">
+            <li class="nav-item active" id="home_div"><a class="nav-link" onclick="showPage('dashboardPage')" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;color:inherit;"><span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span></a></li>
+            <li class="nav-item" id="withdraw_div"><a class="nav-link" onclick="showPage('withdrawPage')" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;color:inherit;"><span class="nav-icon"><i class="fas fa-arrow-up"></i></span><span class="nav-label">Withdraw</span></a></li>
+            <li class="nav-item nav-center"><div class="center-btn" onclick="showPage('propertiesPage')"><i class="fas fa-plus"></i></div><span class="nav-label" style="font-size:10px;font-weight:600;color:#0f9d58;margin-top:2px;display:block;text-align:center;">Invest</span></li>
+            <li class="nav-item" id="team_div"><a class="nav-link" onclick="showPage('referralPage')" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;color:inherit;"><span class="nav-icon"><i class="fas fa-users"></i></span><span class="nav-label">Team</span></a></li>
+            <li class="nav-item" id="profile_div"><a class="nav-link" onclick="showPage('profilePage')" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;color:inherit;"><span class="nav-icon"><i class="fas fa-user"></i></span><span class="nav-label">Profile</span></a></li>
+        </ul>
+    </nav>
+
+</div>
+
+<div id="snackbar"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+const SUPABASE_CONFIG = { url: 'https://xspcijxesncletimcejm.supabase.co', anonKey: 'sb_publishable_YTM-w8JfwkNYh6vW383qIw_IgTKWZbH' };
+const supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+let supabaseConnected = false;
+
+const BIKES = [
+    { id:1, name:'AI Cruiser X1', price:25000, dailyReturn:2500, days:45, totalPayout:112500, type:'Electric Cruiser', image:'https://i.supaimg.com/65d58457-9957-4e72-bb0e-7e4c2671641a/2478b72e-633c-464a-9f97-88d491602e28.png', emoji:'🏍️', rented:false, description:'AI-powered electric cruiser with smart navigation and auto-pilot' },
+    { id:2, name:'AI Sport S2', price:50000, dailyReturn:5000, days:45, totalPayout:225000, type:'Electric Sport', image:'https://i.supaimg.com/65d58457-9957-4e72-bb0e-7e4c2671641a/95ed8ecd-46bd-4ddd-9bf9-01304cc183f4.png', emoji:'🏍️', rented:false, description:'High-performance AI sport bike with adaptive suspension' },
+    { id:3, name:'AI Adventure A3', price:100000, dailyReturn:10000, days:45, totalPayout:450000, type:'Electric Adventure', image:'https://i.supaimg.com/65d58457-9957-4e72-bb0e-7e4c2671641a/1eb1bb88-be8d-4b69-93ad-bffdd9c95b0b.png', emoji:'🏍️', rented:false, description:'AI adventure bike with off-road capabilities' },
+    { id:4, name:'AI Commuter C4', price:150000, dailyReturn:15000, days:45, totalPayout:675000, type:'Electric Commuter', image:'https://i.supaimg.com/65d58457-9957-4e72-bb0e-7e4c2671641a/1fece580-f6b0-4dec-a227-c8c6e8d9beb3.png', emoji:'🏍️', rented:false, description:'Smart AI commuter bike with traffic optimization' },
+    { id:5, name:'AI Performance P5', price:250000, dailyReturn:25000, days:45, totalPayout:1125000, type:'Electric Performance', image:'https://i.supaimg.com/65d58457-9957-4e72-bb0e-7e4c2671641a/fd0fe14e-a1b9-4dbc-9972-b7969c87d873.png', emoji:'🏍️', rented:false, description:'Ultimate AI performance bike with predictive analytics' },
+    { id:6, name:'AI Luxury L6', price:500000, dailyReturn:50000, days:45, totalPayout:2250000, type:'Electric Luxury', image:'https://i.supaimg.com/65d58457-9957-4e72-bb0e-7e4c2671641a/923cf835-de8d-4e44-bf2c-90eb4b885c47.png', emoji:'👑', rented:false, description:'AI luxury bike with autonomous driving and AI concierge' }
+];
+
+const APP_DATA = { users:[], transactions:[], rentals:[], messages:[], supportMessages:[], referrals:[], pendingWithdrawals:[], pendingDeposits:[], depositHistory:[], withdrawHistory:[], vouchers:[] };
+let selectedWithdrawNetwork = 'mtn';
+let selectedDepositNetwork = 'mtn';
+let currentUser = null;
+let autoClaimInterval = null;
+let currentTransactionFilter = 'all';
+let currentAdminTab = 'users';
+
+function isValidPhone(phone){ if(!phone) return false; if(phone.length!==9) return false; if(!phone.startsWith('7')) return false; return /^\d+$/.test(phone); }
+function normalizePhone(phone){ let p = String(phone||'').replace(/\D/g,''); if(p.startsWith('256')&&p.length>9) p=p.slice(3); if(p.startsWith('0')) p=p.slice(1); return p; }
+
+document.addEventListener('DOMContentLoaded', async function(){
+    loadFromLocalStorage();
+    await ensureAdminExists();
+    autoFillReferralCode();
+    loadRememberedCredentials();
+    const userData = localStorage.getItem('currentUser');
+    if(userData){
+        const user = JSON.parse(userData);
+        const found = APP_DATA.users.find(u => normalizePhone(u.phone) === normalizePhone(user.phone));
+        if(found){ currentUser = found; showApp(found); }
+        else { document.getElementById('bottomNav').style.display = 'none'; showPage('loginPage'); }
+    } else {
+        document.getElementById('bottomNav').style.display = 'none';
+        showPage('loginPage');
+    }
+    setTimeout(() => { document.getElementById('preloader').classList.add('hidden'); }, 1200);
+});
+
+function forgotPassword(){ const m = document.getElementById('forgotPasswordAlert'); if(m) m.classList.add('active'); }
+function openManagerTelegram(){ const m = document.getElementById('forgotPasswordAlert'); if(m) m.classList.remove('active'); window.open('https://t.me/keilahsuccess','_blank'); }
+document.addEventListener('click', function(e){ const m = document.getElementById('forgotPasswordAlert'); if(m && m.classList.contains('active') && e.target === m) m.classList.remove('active'); });
+
+function loadRememberedCredentials(){
+    const sp = localStorage.getItem('bovada_remembered_phone');
+    const spw = localStorage.getItem('bovada_remembered_password');
+    if(sp && spw){
+        const pi = document.getElementById('loginPhone');
+        const psi = document.getElementById('loginPassword');
+        const rc = document.getElementById('rememberMe');
+        if(pi) pi.value = sp;
+        if(psi) psi.value = spw;
+        if(rc) rc.checked = true;
+    }
+}
+function saveRememberedCredentials(phone, password){
+    const rc = document.getElementById('rememberMe');
+    if(rc && rc.checked){
+        localStorage.setItem('bovada_remembered_phone', phone);
+        localStorage.setItem('bovada_remembered_password', password);
+    } else {
+        localStorage.removeItem('bovada_remembered_phone');
+        localStorage.removeItem('bovada_remembered_password');
+    }
+}
+
+function saveDataLocal(){ Object.keys(APP_DATA).forEach(k => { localStorage.setItem('bovada_'+k, JSON.stringify(APP_DATA[k])); }); }
+function loadFromLocalStorage(){
+    const keys = ['users','transactions','rentals','messages','supportMessages','referrals','pendingWithdrawals','pendingDeposits','depositHistory','withdrawHistory','vouchers'];
+    keys.forEach(k => { const d = localStorage.getItem('bovada_'+k); APP_DATA[k] = d ? JSON.parse(d) : []; });
+}
+async function saveData(){ saveDataLocal(); }
+
+async function ensureAdminExists(){
+    if(!APP_DATA.users.find(u => normalizePhone(u.phone) === '775450919')){
+        APP_DATA.users.push({ id:'admin_1', phone:'775450919', password:'2005', balance:0, isAdmin:true, referralCode:'ADMIN123', referredBy:null, totalDeposits:0, totalWithdrawn:0, vipLevel:10, activeRentals:0, registrationDate:new Date().toISOString(), suspended:false });
+        saveDataLocal();
+    }
+}
+
+const FIRST_NAMES = ["Mugisha","Kiggundu","Nakato","Ssentongo","Aisha","Kato","Namubiru","Tumusiime","Babirye","Okello","Nabirye","Musoke","Nalubega","Kiprotich","Wasswa","Auma","Byaruhanga","Nankya","Ochieng","Nakimuli","Ssemakula","Atim","Kabuye","Nabukenya","Mugerwa","Nassuna","Kyeyune","Ainembabazi","Mukasa","Nabatanzi","Kirabo","Owino","Nabwire","Ssenyonga","Achieng","Kizza","Namukasa","Owor","Nalwoga","Ssali"];
+const LAST_NAMES = ["Ainembabazi","Ssenyonga","Kyeyune","Mukasa","Nabatanzi","Kirabo","Owino","Nabwire","Achieng","Kizza","Namukasa","Owor","Nalwoga","Ssali","Nabukalu","Tendo","Wanyama","Kagimu","Nassiwa","Odongo","Musinguzi","Ariho","Baguma","Katusiime","Nuwagaba","Atuhaire","Byamukama","Ninsiima","Turyasingura","Akello"];
+const TICKER_NAMES = [];
+for(let i=0;i<FIRST_NAMES.length;i++) for(let j=0;j<LAST_NAMES.length;j++) TICKER_NAMES.push(FIRST_NAMES[i]+' '+LAST_NAMES[j]);
+for(let i=TICKER_NAMES.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [TICKER_NAMES[i],TICKER_NAMES[j]]=[TICKER_NAMES[j],TICKER_NAMES[i]]; }
+let tickerNameIndex = 0;
+
+function startLiveTicker(){
+    let ticker = document.getElementById('liveTicker');
+    if(!ticker){
+        ticker = document.createElement('div');
+        ticker.id = 'liveTicker';
+        ticker.style.cssText = 'position:fixed;bottom:75px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:10px 14px;box-shadow:0 4px 20px rgba(0,0,0,0.12);display:flex;align-items:center;gap:10px;z-index:9999;border:1px solid #eef1f5;max-width:400px;width:calc(100% - 40px);pointer-events:none;';
+        document.getElementById('appContainer').appendChild(ticker);
+    }
+    function next(){
+        if(tickerNameIndex >= TICKER_NAMES.length) tickerNameIndex = 0;
+        const name = TICKER_NAMES[tickerNameIndex]; tickerNameIndex++;
+        const amounts = [10000,15000,20000,25000,30000,40000,50000,75000,100000];
+        const amount = amounts[Math.floor(Math.random()*amounts.length)];
+        const amountStr = amount % 1000 === 0 ? (amount/1000) : (amount/1000).toFixed(1);
+        const network = Math.random()>0.5?'MTN':'Airtel';
+        const nc = network==='MTN'?'#f59e0b':'#ef4444';
+        const times = ["Now","Just now","1m","2m","5m","10m","15m","30m","1h","2h","4h","9h"];
+        const t = times[Math.floor(Math.random()*times.length)];
+        const parts = name.split(' ');
+        const initials = (parts[0]?parts[0][0]:'')+(parts[1]?parts[1][0]:'');
+        const colors = ['#f59e0b','#0f9d58','#2563eb','#7c3aed','#ef4444','#0d9488'];
+        const avc = colors[Math.floor(Math.random()*colors.length)];
+        ticker.innerHTML = `<div style="width:40px;height:40px;border-radius:12px;background:${avc};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0;position:relative;">${initials.toUpperCase()}<div style="position:absolute;top:-2px;right:-2px;width:12px;height:12px;background:#0f9d58;border-radius:50%;border:2px solid #fff;"></div></div><div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:800;color:#1e293b;line-height:1.2;">${name}</div><div style="font-size:12px;color:#64748b;line-height:1.2;">Withdrew <span style="color:${nc};font-weight:700;">${amountStr}k ${network}</span></div></div><div style="font-size:11px;color:#94a3b8;background:#f1f5f9;padding:4px 10px;border-radius:20px;flex-shrink:0;">${t}</div>`;
+        ticker.style.display = 'flex';
+        setTimeout(() => { if(ticker){ ticker.style.display='none'; setTimeout(() => { if(ticker) ticker.style.display='flex'; }, 500); } }, 5000);
+    }
+    setTimeout(next, 1000);
+    setInterval(next, 7000);
+}
+
+function togglePassword(id){
+    const input = document.getElementById(id);
+    if(!input) return;
+    const isPwd = input.type === 'password';
+    input.type = isPwd ? 'text' : 'password';
+    const icon = input.parentElement.querySelector('.eye-btn i');
+    if(icon) icon.className = isPwd ? 'fas fa-eye-slash' : 'fas fa-eye';
+}
+function autoFillReferralCode(){ const p = new URLSearchParams(window.location.search); const r = p.get('ref')||'6JPO491'; const i = document.getElementById('registerReferral'); if(i) i.value = r; }
+function generateReferralCode(){ const c='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let code=''; for(let i=0;i<7;i++) code += c.charAt(Math.floor(Math.random()*c.length)); return code; }
+
+async function handleRegister(){
+    const phoneRaw = document.getElementById('registerPhone').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const confirm = document.getElementById('registerConfirmPassword').value;
+    const refCode = document.getElementById('registerReferral').value.trim().toUpperCase();
+    const err = document.getElementById('registerError');
+    const succ = document.getElementById('registerSuccess');
+    err.style.display = 'none'; succ.style.display = 'none';
+    const phone = normalizePhone(phoneRaw);
+    if(!isValidPhone(phone)){ err.textContent = '⚠️ Phone must be 9 digits starting with 7 (e.g. 712345678)'; err.style.display='block'; return; }
+    if(password.length<4){ err.textContent='Password must be at least 4 characters'; err.style.display='block'; return; }
+    if(password !== confirm){ err.textContent='Passwords do not match'; err.style.display='block'; return; }
+    if(APP_DATA.users.find(u => normalizePhone(u.phone) === phone)){ err.textContent='User already exists'; err.style.display='block'; return; }
+    let referrer = null;
+    if(refCode) referrer = APP_DATA.users.find(u => u.referralCode === refCode);
+    const newUser = { id:'user_'+Date.now(), phone, password, balance:5000, isAdmin:false, referralCode:generateReferralCode(), referredBy:referrer?referrer.phone:null, totalDeposits:0, totalWithdrawn:0, vipLevel:1, activeRentals:0, registrationDate:new Date().toISOString(), suspended:false };
+    APP_DATA.users.push(newUser);
+    if(referrer) APP_DATA.referrals.push({ id:'ref_'+Date.now(), referrerPhone:referrer.phone, refereePhone:phone, level:1, date:new Date().toISOString(), commission:0, hasRented:false, totalSpent:0 });
+    APP_DATA.transactions.push({ id:'txn_'+Date.now(), phone, type:'welcome_bonus', amount:10000, description:'🎉 Welcome bonus', date:new Date().toISOString(), status:'completed' });
+    await saveData();
+    succ.textContent = '✅ Account created! Please login.';
+    succ.style.display = 'block';
+    setTimeout(() => { showPage('loginPage'); document.getElementById('loginPhone').value = phone; succ.style.display='none'; }, 1500);
+}
+
+function handleLogin(){
+    const phoneRaw = document.getElementById('loginPhone').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const err = document.getElementById('loginError');
+    err.style.display = 'none';
+    if(!phoneRaw || !password){ err.textContent='Enter phone and password'; err.style.display='block'; return; }
+    const phone = normalizePhone(phoneRaw);
+    if(!isValidPhone(phone)){ err.textContent='⚠️ Phone must be 9 digits starting with 7 (e.g. 712345678)'; err.style.display='block'; return; }
+    const user = APP_DATA.users.find(u => normalizePhone(u.phone) === phone && u.password === password);
+    if(!user){ err.textContent='Invalid phone or password'; err.style.display='block'; return; }
+    if(user.suspended){ err.textContent='Account suspended'; err.style.display='block'; return; }
+    saveRememberedCredentials(phoneRaw, password);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    currentUser = user;
+    showApp(user);
+}
+
+function handleLogout(){
+    if(!confirm('Are you sure you want to logout?')) return;
+    stopAutoClaim();
+    localStorage.removeItem('currentUser');
+    currentUser = null;
+    document.getElementById('bottomNav').style.display = 'none';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('loginPage').classList.add('active');
+    const t = document.getElementById('liveTicker');
+    if(t) t.remove();
+    showToast('Logged out', 'info');
+}
+
+function showApp(user){
+    document.getElementById('preloader').classList.add('hidden');
+    document.title = 'Bovada Earns | ' + user.phone;
+    if(user.isAdmin){
+        document.getElementById('bottomNav').style.display = 'none';
+    } else {
+        document.getElementById('bottomNav').style.display = 'flex';
+    }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    if(user.isAdmin){
+        document.getElementById('adminPage').classList.add('active');
+        loadAdminDashboard();
+    } else {
+        document.getElementById('dashboardPage').classList.add('active');
+        loadDashboard();
+        startAutoClaim();
+        startLiveTicker();
+    }
+}
+
+function showPage(pageId){
+    if(pageId === 'loginPage' || pageId === 'registerPage'){
+        document.getElementById('bottomNav').style.display = 'none';
+    }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(pageId);
+    if(page) page.classList.add('active');
+    const user = currentUser;
+    if(user && user.isAdmin){
+        document.getElementById('bottomNav').style.display = 'none';
+    } else if(pageId !== 'loginPage' && pageId !== 'registerPage'){
+        document.getElementById('bottomNav').style.display = 'flex';
+        const navMap = { 'dashboardPage':'home_div', 'withdrawPage':'withdraw_div', 'referralPage':'team_div', 'profilePage':'profile_div' };
+        document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.id === navMap[pageId]); });
+    }
+    if(pageId === 'dashboardPage') loadDashboard();
+    if(pageId === 'propertiesPage') loadProperties();
+    if(pageId === 'referralPage') loadReferralPage();
+    if(pageId === 'profilePage') loadProfilePage();
+    if(pageId === 'withdrawPage') loadWithdrawPage();
+    if(pageId === 'myRentalsPage') loadMyRentals();
+    if(pageId === 'depositPage') loadDepositPage();
+    if(pageId === 'supportPage') renderSupportMessages();
+    if(pageId === 'withdrawHistoryPage') renderWithdrawHistory();
+    if(pageId === 'depositHistoryPage') renderDepositHistory();
+    if(pageId === 'adminPage') loadAdminDashboard();
+}
+
+function loadDashboard(){
+    const user = currentUser;
+    if(!user) return;
+    document.getElementById('dashGreeting').textContent = user.phone;
+    document.getElementById('dashBalance').textContent = (user.balance||0).toLocaleString();
+    document.getElementById('investBalance').textContent = 'UGX ' + (user.balance||0).toLocaleString();
+    const txns = APP_DATA.transactions.filter(t => normalizePhone(t.phone) === normalizePhone(user.phone));
+    const revenue = txns.filter(t => ['earning','referral_bonus','welcome_bonus','voucher'].includes(t.type)).reduce((s,t) => s+t.amount, 0);
+    const commissions = txns.filter(t => t.type === 'referral_bonus').reduce((s,t) => s+t.amount, 0);
+    const bonuses = txns.filter(t => t.type === 'welcome_bonus' || t.type === 'voucher').reduce((s,t) => s+t.amount, 0);
+    const withdraws = txns.filter(t => t.type === 'withdrawal' && t.status === 'completed').reduce((s,t) => s+t.amount, 0);
+    const capital = APP_DATA.rentals.filter(r => normalizePhone(r.phone) === normalizePhone(user.phone)).reduce((s,r) => s+r.amount, 0);
+    document.getElementById('dashRevenue').textContent = revenue.toLocaleString();
+    document.getElementById('dashCapital').textContent = capital.toLocaleString();
+    document.getElementById('dashWithdraws').textContent = withdraws.toLocaleString();
+    document.getElementById('dashCommissions').textContent = commissions.toLocaleString() + ' UGX';
+    document.getElementById('dashBonuses').textContent = bonuses.toLocaleString() + ' UGX';
+}
+
+function loadProperties(){
+    const sorted = [...BIKES].sort((a,b) => a.price - b.price);
+    renderProperties(sorted);
+    const s = document.getElementById('propertySearch');
+    if(s) s.oninput = function(){ const term = this.value.toLowerCase(); const f = BIKES.filter(p => p.name.toLowerCase().includes(term) || p.type.toLowerCase().includes(term)).sort((a,b) => a.price - b.price); renderProperties(f); };
+}
+function renderProperties(properties){
+    const grid = document.getElementById('propertyGrid');
+    if(!grid) return;
+    if(properties.length === 0){ grid.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px 0;">No packages found</p>'; return; }
+    grid.innerHTML = properties.map(p => {
+        const tp = p.totalPayout - p.price;
+        return `<div class="bike-card"><div class="bike-img"><img src="${p.image}" alt="${p.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect width=%22400%22 height=%22200%22 fill=%22%231e293b%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%2364748b%22 font-size=%2240%22%3E${p.emoji}%3C/text%3E%3C/svg%3E'"><span class="bike-badge">10% daily · 45d</span></div><div class="bike-body"><div class="bike-name">🏍️ ${p.name}</div><div class="bike-desc">${p.description}</div><div class="bike-stats"><div class="stat-item"><div class="si-label">Total profit</div><div class="si-value">UGX ${tp.toLocaleString()}</div></div><div class="stat-item"><div class="si-label">Daily</div><div class="si-value">UGX ${p.dailyReturn.toLocaleString()}</div></div><div class="stat-item"><div class="si-label">Duration</div><div class="si-value">${p.days} days</div></div></div><div class="bike-footer"><div class="bike-price">UGX ${p.price.toLocaleString()}</div><button class="btn-invest-now" onclick="rentProperty(${p.id})">Invest Now</button></div></div></div>`;
+    }).join('');
+}
+async function rentProperty(id){
+    const user = currentUser;
+    if(!user) return;
+    const bike = BIKES.find(b => b.id === id);
+    if(!bike) return;
+    const hasDeposit = APP_DATA.transactions.some(t => normalizePhone(t.phone) === normalizePhone(user.phone) && t.type === 'deposit' && t.status === 'completed');
+    if(!hasDeposit){ showToast('You need to make a deposit first!', 'error'); return; }
+    if(user.balance < bike.price){ showToast('Insufficient balance. Need UGX '+bike.price.toLocaleString(), 'error'); return; }
+    if(!confirm('Invest in '+bike.name+'?\n\nPrice: UGX '+bike.price.toLocaleString()+'\nDaily: UGX '+bike.dailyReturn.toLocaleString()+'\nDuration: '+bike.days+' days')) return;
+    user.balance -= bike.price;
+    const now = new Date();
+    APP_DATA.rentals.push({ id:'rent_'+Date.now(), phone:user.phone, propertyId:bike.id, propertyName:bike.name, propertyImage:bike.image, amount:bike.price, dailyReturn:bike.dailyReturn, totalDays:bike.days, remainingDays:bike.days, dayCounter:0, status:'active', startDate:now.toISOString(), lastClaimDate:now.toISOString(), nextClaimTime:new Date(now.getTime()+24*60*60*1000).toISOString(), totalEarned:0, propertyLocation:'Kampala, Uganda', propertyType:bike.type });
+    APP_DATA.transactions.push({ id:'txn_'+Date.now(), phone:user.phone, type:'rental', amount:bike.price, description:'Bought '+bike.name, date:now.toISOString(), status:'completed' });
+    if(user.referredBy) processReferralCommission(user.phone, bike.price, bike.name);
+    await saveData();
+    showToast('Invested in '+bike.name+'!', 'success');
+    showPage('myRentalsPage');
+}
+function processReferralCommission(phone, amount, name){
+    const user = APP_DATA.users.find(u => normalizePhone(u.phone) === normalizePhone(phone));
+    if(!user || !user.referredBy) return;
+    const ref = APP_DATA.users.find(u => normalizePhone(u.phone) === normalizePhone(user.referredBy));
+    if(!ref) return;
+    const commission = amount * 0.30;
+    ref.balance = (ref.balance||0) + commission;
+    APP_DATA.transactions.push({ id:'txn_'+Date.now(), phone:ref.phone, type:'referral_bonus', amount:commission, description:'30% commission from '+phone+"'s "+name, date:new Date().toISOString(), status:'completed' });
+    const r = APP_DATA.referrals.find(x => normalizePhone(x.referrerPhone) === normalizePhone(ref.phone) && normalizePhone(x.refereePhone) === normalizePhone(phone));
+    if(r){ r.commission = (r.commission||0)+commission; r.hasRented = true; }
+    saveData();
+}
+
+function loadMyRentals(){
+    const list = document.getElementById('myRentalsList');
+    if(!list) return;
+    const user = currentUser;
+    const rentals = APP_DATA.rentals.filter(r => normalizePhone(r.phone) === normalizePhone(user.phone));
+    if(rentals.length === 0){ list.innerHTML = '<div style="text-align:center;padding:40px 20px;background:#fff;border-radius:18px;border:1px solid #eef1f5;"><div style="font-size:48px;margin-bottom:12px;">🏍️</div><h3 style="font-size:18px;font-weight:700;color:#1e293b;">No Bikes Yet</h3><p style="font-size:14px;color:#94a3b8;">You haven\'t purchased any bikes yet.</p><button class="btn-primary-green" style="margin-top:12px;padding:10px 30px;width:auto;display:inline-flex;" onclick="showPage(\'propertiesPage\')">Browse Bikes</button></div>'; return; }
+    list.innerHTML = rentals.map(r => {
+        const dc = r.dayCounter||0, td = r.totalDays||0, te = r.totalEarned||0;
+        return `<div style="background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid #eef1f5;"><div style="display:flex;gap:12px;align-items:center;"><div style="width:60px;height:60px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#f1f5f9;"><img src="${r.propertyImage}" style="width:100%;height:100%;object-fit:cover;"></div><div style="flex:1;"><div style="font-weight:700;font-size:14px;color:#1e293b;">${r.propertyName}</div><div style="font-size:13px;color:#0f9d58;font-weight:600;">UGX ${r.amount.toLocaleString()}</div><div style="font-size:12px;color:#94a3b8;">UGX ${r.dailyReturn.toLocaleString()}/day</div></div><div style="text-align:right;"><div style="font-size:11px;font-weight:700;color:${r.status==='active'?'#0f9d58':'#2563eb'};">${r.status==='active'?'🟢 Active':'✅ Done'}</div><div style="font-size:12px;font-weight:600;color:#f59e0b;">Day ${dc}/${td}</div></div></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;"><div><span style="font-size:12px;color:#94a3b8;">Earned: </span><span style="font-size:14px;color:#0f9d58;font-weight:700;">UGX ${te.toLocaleString()}</span></div></div></div>`;
+    }).join('');
+}
+
+function loadReferralPage(){
+    const user = currentUser;
+    if(!user) return;
+    document.getElementById('refCode').textContent = user.referralCode || '6JPO491';
+    document.getElementById('refLink').textContent = 'https://bovada-earns.top/?ref='+(user.referralCode||'6JPO491');
+    const refs = APP_DATA.referrals.filter(r => normalizePhone(r.referrerPhone) === normalizePhone(user.phone));
+    document.getElementById('totalReferrals').textContent = refs.length;
+    document.getElementById('withRentals').textContent = refs.filter(r => r.hasRented).length;
+    const c = APP_DATA.transactions.filter(t => normalizePhone(t.phone) === normalizePhone(user.phone) && t.type === 'referral_bonus').reduce((s,t) => s+t.amount, 0);
+    document.getElementById('commissionEarned').textContent = c.toLocaleString();
+}
+function copyReferralCode(){ navigator.clipboard.writeText(document.getElementById('refCode').textContent).then(() => showToast('Referral code copied!', 'success')); }
+function copyReferralLink(){ navigator.clipboard.writeText(document.getElementById('refLink').textContent).then(() => showToast('Referral link copied!', 'success')); }
+
+function loadProfilePage(){
+    const user = currentUser;
+    if(!user) return;
+    document.getElementById('profDisplayPhone').textContent = user.phone;
+    document.getElementById('profBalance').textContent = 'UGX ' + (user.balance||0).toLocaleString();
+    const b = APP_DATA.transactions.filter(t => normalizePhone(t.phone) === normalizePhone(user.phone) && (t.type === 'welcome_bonus' || t.type === 'voucher')).reduce((s,t) => s+t.amount, 0);
+    document.getElementById('profPromo').textContent = 'UGX ' + b.toLocaleString();
+}
+
+/* ================= VOUCHER / GIFT CODE SYSTEM ================= */
+function checkVoucherStatus(){
+    const input = document.getElementById('voucherCode');
+    const hint = document.getElementById('voucherHint');
+    if(!input || !hint) return;
+    const code = input.value.trim().toUpperCase();
+    if(!code){ hint.textContent = ''; return; }
+    const v = APP_DATA.vouchers.find(x => x.code === code);
+    if(!v){ hint.textContent = ''; return; }
+    if(v.used){
+        hint.textContent = '⚠️ This code has already been used';
+        hint.style.color = '#ef4444';
+    } else {
+        hint.textContent = '✅ Valid code — worth UGX ' + v.amount.toLocaleString();
+        hint.style.color = '#0f9d58';
+    }
+}
+
+async function redeemVoucher(){
+    const u = currentUser;
+    if(!u){ showToast('Please log in first', 'error'); return; }
+    const input = document.getElementById('voucherCode');
+    const hint = document.getElementById('voucherHint');
+    const code = input.value.trim().toUpperCase();
+    if(!code){ showToast('Enter a voucher code', 'error'); return; }
+
+    // 1. Find the code
+    const v = APP_DATA.vouchers.find(x => x.code === code);
+    if(!v){ showToast('❌ Invalid voucher code', 'error'); return; }
+
+    // 2. Already used by ANYONE (single-use codes)
+    if(v.used){
+        if(normalizePhone(v.usedBy) === normalizePhone(u.phone)){
+            showToast('⚠️ You have already used this code', 'error');
+        } else {
+            showToast('❌ This code has already been used', 'error');
+        }
+        input.value = '';
+        if(hint) hint.textContent = '';
+        return;
+    }
+
+    // 3. Safety net — check user's transaction history for this exact code
+    const alreadyRedeemed = APP_DATA.transactions.some(t =>
+        normalizePhone(t.phone) === normalizePhone(u.phone) &&
+        t.type === 'voucher' &&
+        t.voucherCode === code
+    );
+    if(alreadyRedeemed){
+        // Repair the voucher record if it was somehow reset
+        v.used = true;
+        v.usedBy = u.phone;
+        v.usedDate = v.usedDate || new Date().toISOString();
+        await saveData();
+        showToast('⚠️ You have already redeemed this code', 'error');
+        input.value = '';
+        if(hint) hint.textContent = '';
+        return;
+    }
+
+    // 4. Block suspended accounts
+    if(u.suspended){ showToast('🚫 Account suspended', 'error'); return; }
+
+    // 5. Credit the user
+    v.used = true;
+    v.usedBy = u.phone;
+    v.usedDate = new Date().toISOString();
+
+    u.balance = (u.balance||0) + v.amount;
+    u.totalDeposits = (u.totalDeposits||0) + v.amount;
+
+    APP_DATA.transactions.push({
+        id:'txn_'+Date.now(),
+        phone:u.phone,
+        type:'voucher',
+        amount:v.amount,
+        voucherCode:code,
+        description:'🎁 VIP Gift Code redeemed: '+code,
+        date:new Date().toISOString(),
+        status:'completed'
+    });
+
+    // Persist
+    localStorage.setItem('currentUser', JSON.stringify(u));
+    await saveData();
+
+    input.value = '';
+    if(hint) hint.textContent = '';
+    showToast('🎉 UGX ' + v.amount.toLocaleString() + ' credited!', 'success');
+
+    // Refresh UI
+    loadProfilePage();
+    loadDashboard();
+
+    // Refresh admin voucher list if open (safe call)
+    if(typeof renderAdminVouchers === 'function' && document.getElementById('adminVoucherList')){
+        renderAdminVouchers();
+        const av = APP_DATA.vouchers.filter(x => !x.used);
+        const badge = document.getElementById('voucherCountBadge');
+        if(badge) badge.textContent = av.length;
+    }
+
+    // Briefly disable input to avoid double-tap
+    input.disabled = true;
+    setTimeout(() => { input.disabled = false; }, 1500);
+}
+
+function openTelegram(){ window.open('https://t.me/aifuturebikes', '_blank'); }
+
+function selectNetwork(net){ selectedWithdrawNetwork = net; document.getElementById('mtnBtn').classList.toggle('active', net==='mtn'); document.getElementById('airtelBtn').classList.toggle('active', net==='airtel'); }
+function setWithdrawAmount(amount){ const u = currentUser; if(!u) return; const i = document.getElementById('withdrawAmount'); i.value = amount==='max' ? Math.floor(u.balance/1.09) : amount; calculateWithdrawAmount(); }
+function calculateWithdrawAmount(){
+    const u = currentUser; if(!u) return;
+    const a = parseFloat(document.getElementById('withdrawAmount').value)||0;
+    const s = document.getElementById('feeSummary'); const e = document.getElementById('withdrawError');
+    e.style.display = 'none';
+    if(a < 5000){ s.style.display = 'none'; return; }
+    const fee = a * 0.09; const tr = a + fee;
+    document.getElementById('feeDisplay').textContent = 'UGX ' + fee.toLocaleString();
+    document.getElementById('receiveDisplay').textContent = 'UGX ' + a.toLocaleString();
+    s.style.display = 'block';
+    if(tr > u.balance){ e.textContent = '⚠️ Insufficient balance! Available: UGX '+u.balance.toLocaleString()+'. Need UGX '+tr.toLocaleString()+' (incl. fee).'; e.style.display = 'block'; }
+}
+function loadWithdrawPage(){
+    const u = currentUser; if(!u) return;
+    document.getElementById('withdrawBalanceDisplay').textContent = 'UGX ' + (u.balance||0).toLocaleString();
+    document.getElementById('withdrawPhone').value = u.phone.startsWith('0') ? u.phone : '0'+u.phone;
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('feeSummary').style.display = 'none';
+    document.getElementById('withdrawError').style.display = 'none';
+}
+async function handleWithdraw(){
+    const u = currentUser; if(!u) return;
+    const a = parseFloat(document.getElementById('withdrawAmount').value);
+    const p = document.getElementById('withdrawPhone').value.trim();
+    const e = document.getElementById('withdrawError');
+    if(!a || a < 5000){ e.textContent = 'Minimum withdrawal is 5,000 UGX'; e.style.display = 'block'; return; }
+    if(!p || p.length < 9){ e.textContent = 'Enter a valid phone number'; e.style.display = 'block'; return; }
+    const fee = a * 0.09; const total = a + fee;
+    if(total > u.balance){ e.textContent = 'Insufficient balance. Need UGX '+total.toLocaleString(); e.style.display = 'block'; return; }
+    const hasRental = APP_DATA.rentals.some(r => normalizePhone(r.phone) === normalizePhone(u.phone) && r.status === 'active');
+    if(!hasRental){ e.textContent = 'You must rent at least one bike before withdrawing!'; e.style.display = 'block'; return; }
+    u.balance -= total;
+    const id = 'wd_' + Date.now();
+    APP_DATA.pendingWithdrawals.push({ id, phone:u.phone, amount:a, fee, feePercentage:9, withdrawPhone:p, withdrawMethod:selectedWithdrawNetwork==='mtn'?'MTN Mobile Money':'Airtel Money', date:new Date().toISOString(), status:'pending' });
+    APP_DATA.transactions.push({ id:'txn_'+Date.now(), phone:u.phone, type:'withdrawal', amount:a, fee, description:'Withdrawal to '+selectedWithdrawNetwork.toUpperCase()+' ('+p+')', date:new Date().toISOString(), status:'pending' });
+    await saveData();
+    showToast('Withdrawal request submitted!', 'success');
+    showPage('dashboardPage');
+}
+
+function setDepositAmount(amount){ document.getElementById('depositAmount').value = amount; updateDepositFeePreview(); }
+function updateDepositFeePreview(){
+    const a = parseFloat(document.getElementById('depositAmount').value)||0;
+    const p = document.getElementById('depositFeePreview');
+    if(a >= 10000){
+        const f = Math.round(a*0.05); const n = a - f;
+        document.getElementById('previewPay').textContent = a.toLocaleString()+' UGX';
+        document.getElementById('previewFee').textContent = f.toLocaleString()+' UGX';
+        document.getElementById('previewNet').textContent = n.toLocaleString()+' UGX';
+        p.style.display = 'block';
+    } else p.style.display = 'none';
+}
+function showDepositStep1(){
+    if(window._marzPollTimer){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; }
+    document.getElementById('depositStep1').style.display = 'block';
+    document.getElementById('depositStep2').style.display = 'none';
+    document.getElementById('depositError').style.display = 'none';
+    const w = document.getElementById('depositWaiting');
+    const s = document.getElementById('depositSuccessBox');
+    const f = document.getElementById('depositFailedBox');
+    if(w) w.style.display = 'block';
+    if(s) s.style.display = 'none';
+    if(f) f.style.display = 'none';
+    const b = document.getElementById('payWithMarzBtn');
+    if(b){ b.disabled = false; b.innerHTML = '<i class="fas fa-mobile-alt"></i> Pay with Mobile Money'; }
+}
+function cancelMarzDeposit(){ showDepositStep1(); showToast('Payment cancelled. You can try again.', 'warning'); }
+function loadDepositPage(){
+    const u = currentUser; if(!u) return;
+    showDepositStep1();
+    const pi = document.getElementById('payerPhoneNumber');
+    if(pi && u.phone && !pi.value){
+        let p = String(u.phone).replace(/\D/g,'');
+        if(p.length === 9) p = '0'+p;
+        if(p.startsWith('256') && p.length === 12) p = '0'+p.slice(3);
+        pi.value = p;
+    }
+    renderTransactions();
+}
+async function initiateMarzDeposit(){
+    const user = currentUser;
+    if(!user){ showToast('Please log in first', 'error'); return; }
+    if(user.suspended){ showToast('🚫 Account suspended! Cannot make deposits.', 'error'); return; }
+    const ai = document.getElementById('depositAmount');
+    const pi = document.getElementById('payerPhoneNumber');
+    const ee = document.getElementById('depositError');
+    const btn = document.getElementById('payWithMarzBtn');
+    ee.style.display = 'none';
+    const amount = parseFloat(ai.value);
+    const phone = (pi.value||'').trim().replace(/\s/g,'');
+    if(!amount || amount < 10000){ ee.textContent = '⚠️ Minimum deposit is 10,000 UGX.'; ee.style.display = 'block'; return; }
+    if(!phone || phone.length < 9){ ee.textContent = '⚠️ Please enter a valid Mobile Money number.'; ee.style.display = 'block'; return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Initiating…';
+    try {
+        const res = await fetch('/api/deposit/initiate', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ amount, phone, userPhone:user.phone }) });
+        const data = await res.json();
+        if(!data.success){ ee.textContent = '❌ ' + (data.message||'Failed'); ee.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-mobile-alt"></i> Pay with Mobile Money'; return; }
+        document.getElementById('waitingPhone').textContent = data.data.phone || phone;
+        document.getElementById('waitingAmount').textContent = amount.toLocaleString()+' UGX';
+        document.getElementById('waitingFee').textContent = data.data.fee.toLocaleString()+' UGX';
+        document.getElementById('waitingNet').textContent = data.data.netCredit.toLocaleString()+' UGX';
+        document.getElementById('waitingStatus').textContent = 'Waiting for approval…';
+        document.getElementById('depositStep1').style.display = 'none';
+        document.getElementById('depositStep2').style.display = 'block';
+        const id = 'dep_' + Date.now();
+        APP_DATA.pendingDeposits.push({ id, phone:user.phone, amount, netCredit:data.data.netCredit, fee:data.data.fee, method:'MarzPay', senderPhone:phone, reference:data.data.reference, date:new Date().toISOString(), status:'pending' });
+        APP_DATA.depositHistory.push({ id, phone:user.phone, amount, netCredit:data.data.netCredit, method:'MarzPay', senderPhone:phone, reference:data.data.reference, requestedDate:new Date().toISOString(), approvedDate:null, status:'pending' });
+        APP_DATA.transactions.push({ id:'txn_'+Date.now(), phone:user.phone, type:'deposit_pending', amount, description:'MarzPay recharge from '+phone+' (Pending)', date:new Date().toISOString(), status:'pending', reference:data.data.reference });
+        await saveData();
+        renderTransactions();
+        showToast('📲 Prompt sent! Approve on your phone.', 'success');
+        startMarzPolling(data.data.reference, data.data.netCredit, amount, phone, id);
+    } catch(err){
+        ee.textContent = '❌ Network error. Please try again.';
+        ee.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-mobile-alt"></i> Pay with Mobile Money';
+    }
+}
+function startMarzPolling(ref, net, amount, phone, id){
+    if(window._marzPollTimer) clearInterval(window._marzPollTimer);
+    let att = 0; const max = 60;
+    window._marzPollTimer = setInterval(async () => {
+        att++;
+        try {
+            const res = await fetch('/api/deposit/status/' + encodeURIComponent(ref));
+            const data = await res.json();
+            if(!data.success) return;
+            const st = data.data.status;
+            const se = document.getElementById('waitingStatus');
+            if(st === 'completed' || st === 'sandbox'){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; await creditMarzDeposit(net, amount, phone, ref, id); return; }
+            if(st === 'failed' || st === 'cancelled'){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; markMarzFailed(id, ref, 'Payment was declined or cancelled.'); return; }
+            if(se) se.textContent = 'Waiting for approval… (' + att + ')';
+            if(att >= max){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; if(se){ se.textContent = 'Still pending'; se.style.color = '#f59e0b'; } showToast('Payment still pending.', 'warning'); }
+        } catch(e){ console.warn('Poll error', e); }
+    }, 3000);
+}
+async function creditMarzDeposit(net, amount, phone, ref, id){
+    const user = currentUser; if(!user) return;
+    user.balance = (user.balance||0) + net;
+    user.totalDeposits = (user.totalDeposits||0) + net;
+    const p = APP_DATA.pendingDeposits.find(d => d.id === id || d.reference === ref);
+    if(p) p.status = 'approved';
+    const h = APP_DATA.depositHistory.find(x => x.id === id || x.reference === ref);
+    if(h){ h.status = 'approved'; h.approvedDate = new Date().toISOString(); h.netCredit = net; }
+    const t = APP_DATA.transactions.find(x => x.reference === ref && x.status === 'pending');
+    if(t){ t.status = 'completed'; t.type = 'deposit'; t.amount = net; t.description = 'MarzPay recharge from '+phone+' (auto)'; }
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    await saveData();
+    document.getElementById('depositWaiting').style.display = 'none';
+    document.getElementById('depositSuccessBox').style.display = 'block';
+    document.getElementById('successNet').textContent = net.toLocaleString();
+    showToast('✅ UGX ' + net.toLocaleString() + ' added!', 'success');
+    loadDashboard();
+    renderTransactions();
+}
+function markMarzFailed(id, ref, msg){
+    const p = APP_DATA.pendingDeposits.find(d => d.id === id || d.reference === ref);
+    if(p) p.status = 'rejected';
+    const h = APP_DATA.depositHistory.find(x => x.id === id || x.reference === ref);
+    if(h) h.status = 'rejected';
+    const t = APP_DATA.transactions.find(x => x.reference === ref && x.status === 'pending');
+    if(t) t.status = 'rejected';
+    saveData();
+    document.getElementById('depositWaiting').style.display = 'none';
+    document.getElementById('depositFailedBox').style.display = 'block';
+    document.getElementById('failedMessage').textContent = msg || 'Payment failed or was declined.';
+    showToast('❌ Payment failed', 'error');
+    renderTransactions();
+}
+
+function filterTransactions(filter){ currentTransactionFilter = filter; renderTransactions(); }
+function renderTransactions(){
+    const user = currentUser; if(!user) return;
+    const list = document.getElementById('transactionList');
+    if(!list) return;
+    let txns = APP_DATA.transactions.filter(t => normalizePhone(t.phone) === normalizePhone(user.phone)).sort((a,b) => new Date(b.date) - new Date(a.date));
+    if(currentTransactionFilter === 'deposit') txns = txns.filter(t => t.type === 'deposit' || t.type === 'deposit_pending');
+    else if(currentTransactionFilter === 'earning') txns = txns.filter(t => ['earning','referral_bonus','welcome_bonus','voucher'].includes(t.type));
+    else if(currentTransactionFilter === 'withdrawal') txns = txns.filter(t => t.type === 'withdrawal');
+    else if(currentTransactionFilter === 'pending') txns = txns.filter(t => t.status === 'pending');
+    if(txns.length === 0){ list.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px 0;">No transactions found</p>'; return; }
+    list.innerHTML = txns.slice(0,50).map(t => {
+        let pos = ['deposit','earning','referral_bonus','welcome_bonus','voucher'].includes(t.type);
+        let sc = pos ? '#0f9d58' : '#ef4444';
+        let st = '';
+        if(t.status === 'pending'){ sc = '#f59e0b'; st = ' ⏳ Pending'; }
+        return `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><div><div style="font-weight:500;font-size:13px;color:#1e293b;">${t.description}</div><div style="font-size:11px;color:#94a3b8;">${t.type.toUpperCase()} • ${new Date(t.date).toLocaleDateString()}${st}</div></div><div style="color:${sc};font-weight:600;font-size:14px;">${pos?'+':'-'} UGX ${t.amount.toLocaleString()}</div></div>`;
+    }).join('');
+}
+function renderWithdrawHistory(){
+    const list = document.getElementById('withdrawHistoryList'); if(!list) return;
+    const u = currentUser;
+    const h = APP_DATA.pendingWithdrawals.filter(w => normalizePhone(w.phone) === normalizePhone(u.phone)).sort((a,b) => new Date(b.date) - new Date(a.date));
+    if(h.length === 0){ list.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px 0;">No withdrawal history</p>'; return; }
+    list.innerHTML = h.map(w => `<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid #eef1f5;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:700;color:#ef4444;font-size:16px;">- UGX ${w.amount.toLocaleString()}</div><span style="padding:2px 12px;border-radius:12px;font-size:11px;font-weight:700;background:${w.status==='pending'?'#fef3c7':w.status==='approved'?'#d1fae5':'#fee2e2'};color:${w.status==='pending'?'#d97706':w.status==='approved'?'#0f9d58':'#ef4444'};">${w.status.charAt(0).toUpperCase()+w.status.slice(1)}</span></div><div style="font-size:12px;color:#94a3b8;margin-top:4px;">${new Date(w.date).toLocaleString()}</div></div>`).join('');
+}
+function renderDepositHistory(){
+    const list = document.getElementById('depositHistoryList'); if(!list) return;
+    const u = currentUser;
+    const h = APP_DATA.transactions.filter(t => normalizePhone(t.phone) === normalizePhone(u.phone) && (t.type === 'deposit' || t.type === 'deposit_pending')).sort((a,b) => new Date(b.date) - new Date(a.date));
+    if(h.length === 0){ list.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px 0;">No recharge history</p>'; return; }
+    list.innerHTML = h.map(d => `<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid #eef1f5;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:700;color:#0f9d58;font-size:16px;">+ UGX ${d.amount.toLocaleString()}</div><span style="padding:2px 12px;border-radius:12px;font-size:11px;font-weight:700;background:${d.status==='pending'?'#fef3c7':'#d1fae5'};color:${d.status==='pending'?'#d97706':'#0f9d58'};">${(d.status||'completed').charAt(0).toUpperCase()+(d.status||'completed').slice(1)}</span></div><div style="font-size:12px;color:#94a3b8;margin-top:4px;">${new Date(d.date).toLocaleString()}</div><div style="font-size:12px;color:#94a3b8;">${d.description}</div></div>`).join('');
+}
+
+async function handleChangePassword(){
+    const u = currentUser; if(!u) return;
+    const c = document.getElementById('currentPassword').value;
+    const np = document.getElementById('newPassword').value;
+    const cp = document.getElementById('confirmNewPassword').value;
+    const e = document.getElementById('passwordError');
+    const s = document.getElementById('passwordSuccess');
+    e.style.display = 'none'; s.style.display = 'none';
+    if(!c || !np || !cp){ e.textContent = 'Fill in all fields'; e.style.display = 'block'; return; }
+    if(c !== u.password){ e.textContent = 'Current password is incorrect'; e.style.display = 'block'; return; }
+    if(np.length < 4){ e.textContent = 'New password must be at least 4 characters'; e.style.display = 'block'; return; }
+    if(np !== cp){ e.textContent = 'Passwords do not match'; e.style.display = 'block'; return; }
+    u.password = np;
+    localStorage.setItem('currentUser', JSON.stringify(u));
+    saveData();
+    s.textContent = '✅ Password updated!';
+    s.style.display = 'block';
+    setTimeout(() => { s.style.display = 'none'; showPage('profilePage'); }, 1500);
+}
+
+function renderSupportMessages(){
+    const area = document.getElementById('supportMessageArea'); if(!area) return;
+    const u = currentUser;
+    const msgs = APP_DATA.supportMessages.filter(m => normalizePhone(m.phone) === normalizePhone(u.phone) || normalizePhone(m.userPhone) === normalizePhone(u.phone));
+    if(msgs.length === 0){ area.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px 0;font-size:14px;">No messages yet. Send a message to the admin.</p>'; return; }
+    msgs.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+    area.innerHTML = msgs.map(m => {
+        const sent = m.sender === 'user';
+        return `<div style="padding:8px 14px;margin:4px 0;border-radius:14px;max-width:85%;word-wrap:break-word;${sent?'background:#0f9d58;margin-left:auto;text-align:right;color:#fff;':'background:#f1f5f9;margin-right:auto;text-align:left;color:#1e293b;'}"><div style="font-size:10px;font-weight:600;opacity:0.7;margin-bottom:2px;">${sent?'You':'Admin'}</div><div style="font-size:14px;">${m.content}</div><div style="font-size:9px;opacity:0.6;margin-top:2px;">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+    }).join('');
+    area.scrollTop = area.scrollHeight;
+}
+function sendSupportMessage(){
+    const u = currentUser; if(!u) return;
+    const i = document.getElementById('supportInput');
+    const c = i.value.trim();
+    if(!c) return;
+    APP_DATA.supportMessages.push({ id:'support_'+Date.now(), phone:u.phone, userPhone:u.phone, sender:'user', content:c, timestamp:new Date().toISOString(), isRead:false });
+    saveData();
+    i.value = '';
+    renderSupportMessages();
+    showToast('Message sent!', 'success');
+}
+
+function startAutoClaim(){ if(autoClaimInterval) clearInterval(autoClaimInterval); autoClaimInterval = setInterval(performAutoClaim, 60000); }
+function stopAutoClaim(){ if(autoClaimInterval){ clearInterval(autoClaimInterval); autoClaimInterval = null; } }
+function performAutoClaim(){
+    const u = currentUser; if(!u) return;
+    const rs = APP_DATA.rentals.filter(r => normalizePhone(r.phone) === normalizePhone(u.phone) && r.status === 'active');
+    let cl = 0;
+    rs.forEach(r => {
+        const now = new Date();
+        const nc = new Date(r.nextClaimTime || r.lastClaimDate);
+        if(now.getTime() >= nc.getTime()){
+            const p = r.dailyReturn;
+            u.balance += p;
+            r.totalEarned = (r.totalEarned||0) + p;
+            r.remainingDays -= 1;
+            r.dayCounter = (r.dayCounter||0) + 1;
+            r.lastClaimDate = now.toISOString();
+            r.nextClaimTime = new Date(now.getTime() + 24*60*60*1000).toISOString();
+            if(r.remainingDays <= 0) r.status = 'completed';
+            APP_DATA.transactions.push({ id:'txn_'+Date.now()+'_'+Math.random().toString(36).substr(2,5), phone:u.phone, type:'earning', amount:p, description:'Day '+r.dayCounter+' income from '+r.propertyName, date:now.toISOString(), status:'completed' });
+            cl += p;
+        }
+    });
+    if(cl > 0){
+        localStorage.setItem('currentUser', JSON.stringify(u));
+        saveData();
+        if(document.getElementById('dashboardPage').classList.contains('active')) loadDashboard();
+        if(document.getElementById('myRentalsPage').classList.contains('active')) loadMyRentals();
+    }
+}
+
+function contactManager(){ const p = '256702995218'; const m = 'Hello, I need assistance with my Bovada Earns account.'; window.open('https://wa.me/'+p+'?text='+encodeURIComponent(m), '_blank'); }
+
+function loadAdminDashboard(){
+    const u = currentUser;
+    if(!u || !u.isAdmin){ showPage('dashboardPage'); return; }
+    const tu = APP_DATA.users.filter(x => !x.isAdmin).length;
+    document.getElementById('adminTotalUsers').textContent = tu;
+    document.getElementById('userCountBadge').textContent = tu;
+    const ad = APP_DATA.transactions.filter(t => t.type === 'deposit' && t.status === 'completed').reduce((s,t) => s+t.amount, 0);
+    document.getElementById('adminTotalDeposits').textContent = ad.toLocaleString();
+    const pw = APP_DATA.pendingWithdrawals.filter(w => w.status === 'pending');
+    document.getElementById('adminPendingWithdrawals').textContent = pw.length;
+    document.getElementById('wdCountBadge').textContent = pw.length;
+    const pd = APP_DATA.pendingDeposits.filter(d => d.status === 'pending');
+    document.getElementById('depCountBadge').textContent = pd.length;
+    const am = APP_DATA.messages.filter(m => m.isBroadcast === true || m.sender === 'user' || m.fromAdmin === true);
+    document.getElementById('msgCountBadge').textContent = am.length;
+    const sm = APP_DATA.supportMessages.filter(m => m.sender === 'user');
+    document.getElementById('supportCountBadge').textContent = sm.length;
+    const av = APP_DATA.vouchers.filter(v => !v.used);
+    document.getElementById('voucherCountBadge').textContent = av.length;
+    renderAdminUsers(); renderAdminDeposits(); renderAdminWithdrawals(); renderAdminMessages(); renderAdminSupport(); renderAdminTransactions(); renderAdminRentals(); renderAdminVouchers();
+    adminSwitchTab(currentAdminTab);
+}
+function adminSwitchTab(tab){
+    currentAdminTab = tab;
+    document.querySelectorAll('.admin-tab-pill').forEach(t => t.classList.remove('active'));
+    const btn = document.querySelector('.admin-tab-pill[data-tab="'+tab+'"]');
+    if(btn) btn.classList.add('active');
+    document.getElementById('adminUsersTab').style.display = tab === 'users' ? 'block' : 'none';
+    document.getElementById('adminDepositsTab').style.display = tab === 'deposits' ? 'block' : 'none';
+    document.getElementById('adminWithdrawalsTab').style.display = tab === 'withdrawals' ? 'block' : 'none';
+    document.getElementById('adminMessagesTab').style.display = tab === 'messages' ? 'block' : 'none';
+    document.getElementById('adminSupportTab').style.display = tab === 'support' ? 'block' : 'none';
+    document.getElementById('adminTransactionsTab').style.display = tab === 'transactions' ? 'block' : 'none';
+    document.getElementById('adminRentalsTab').style.display = tab === 'rentals' ? 'block' : 'none';
+    document.getElementById('adminVouchersTab').style.display = tab === 'vouchers' ? 'block' : 'none';
+}
+function adminRefreshData(){ loadAdminDashboard(); showToast('🔄 Data refreshed!', 'success'); }
+function renderAdminUsers(){
+    const list = document.getElementById('adminUserList'); if(!list) return;
+    const users = APP_DATA.users.filter(u => !u.isAdmin);
+    if(users.length === 0){ list.innerHTML = '<p style="color:#6c6c8a;text-align:center;padding:20px 0;">No users registered</p>'; return; }
+    list.innerHTML = users.map(u => {
+        const had = APP_DATA.transactions.some(t => normalizePhone(t.phone) === normalizePhone(u.phone) && t.type === 'deposit' && t.status === 'completed');
+        const hr = APP_DATA.rentals.some(r => normalizePhone(r.phone) === normalizePhone(u.phone) && r.status === 'active');
+        const is = u.suspended || false;
+        let sb = '';
+        if(is) sb = ' <span class="status-badge suspended">🚫 Suspended</span>';
+        else if(had) sb = ' <span class="status-badge active">✅ Active</span>';
+        return `<div class="admin-user-row"><div class="aur-info"><div class="aur-phone"><i class="fas fa-mobile-alt"></i> ${u.phone}</div><div class="aur-meta">VIP ${u.vipLevel||1} · Active Rentals: ${u.activeRentals||0} · Balance: UGX ${(u.balance||0).toLocaleString()} ${had?'✅':'🔴 No Deposit'} ${hr?'⚡':'📭 No Rental'} ${sb}</div></div><div class="aur-actions"><button class="aur-btn add" onclick="adminAddBalanceToUser('${u.phone}')" title="Add Balance"><i class="fas fa-plus"></i></button><button class="aur-btn reset" onclick="adminResetPassword('${u.phone}')" title="Reset Password"><i class="fas fa-key"></i></button><button class="aur-btn reply" onclick="adminReplyToUser('${u.phone}')" title="Private Reply"><i class="fas fa-comment"></i></button><button class="aur-btn impersonate" onclick="adminImpersonateUser('${u.phone}')" title="Login as User"><i class="fas fa-user"></i></button>${is?`<button class="aur-btn unsuspend" onclick="adminUnsuspendUser('${u.phone}')" title="Unsuspend"><i class="fas fa-check"></i></button>`:`<button class="aur-btn suspend" onclick="adminSuspendUser('${u.phone}')" title="Suspend"><i class="fas fa-ban"></i></button>`}<button class="aur-btn delete" onclick="adminDeleteUser('${u.phone}')" title="Delete"><i class="fas fa-trash"></i></button></div></div>`;
+    }).join('');
+}
+function adminCheckUserExists(phone){
+    const el = document.getElementById('adminUserCheck');
+    if(!phone || phone.length < 5){ if(el) el.textContent = ''; return; }
+    const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone) && !x.isAdmin);
+    if(el){ if(u){ el.innerHTML = '✅ User found: <strong style="color:#2ecc71;">'+phone+'</strong> (Balance: UGX '+u.balance.toLocaleString()+')'; el.style.color = '#2ecc71'; } else { el.innerHTML = '❌ User <strong style="color:#ff4757;">'+phone+'</strong> not found'; el.style.color = '#ff4757'; } }
+}
+function adminAddBalanceToUser(phone){ const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone)); if(!u){ showToast('User not found!', 'error'); return; } document.getElementById('adminUserPhone').value = phone; adminCheckUserExists(phone); document.getElementById('adminUserPhone').scrollIntoView({behavior:'smooth'}); document.getElementById('adminAddAmount').focus(); }
+async function adminAddBalance(){
+    const phone = document.getElementById('adminUserPhone').value.trim();
+    const amount = parseFloat(document.getElementById('adminAddAmount').value);
+    const m = document.getElementById('adminAddMessage');
+    m.style.display = 'none';
+    if(!phone || !amount || amount < 1000){ m.textContent = '❌ Please enter valid phone and amount'; m.style.color = '#ff4757'; m.style.display = 'block'; return; }
+    const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone));
+    if(!u || u.isAdmin){ m.textContent = '❌ User not found or is admin'; m.style.color = '#ff4757'; m.style.display = 'block'; return; }
+    u.balance = (u.balance||0) + amount;
+    u.totalDeposits = (u.totalDeposits||0) + amount;
+    APP_DATA.transactions.push({ id:'txn_'+Date.now(), phone:u.phone, type:'deposit', amount, description:'💰 Admin added balance: UGX '+amount.toLocaleString(), date:new Date().toISOString(), status:'completed' });
+    saveData();
+    m.textContent = '✅ Added UGX '+amount.toLocaleString()+' to '+phone+'!';
+    m.style.color = '#2ecc71';
+    m.style.display = 'block';
+    document.getElementById('adminUserPhone').value = '';
+    document.getElementById('adminAddAmount').value = '';
+    document.getElementById('adminUserCheck').textContent = '';
+    loadAdminDashboard();
+    setTimeout(() => { m.style.display = 'none'; }, 4000);
+}
+async function adminDeleteUser(phone){
+    const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone));
+    if(!u){ showToast('User not found!', 'error'); return; }
+    if(u.isAdmin){ showToast('❌ Cannot delete admin!', 'error'); return; }
+    if(!confirm('⚠️ Delete user '+phone+'? This cannot be undone!')) return;
+    const i = APP_DATA.users.findIndex(x => normalizePhone(x.phone) === normalizePhone(phone));
+    if(i !== -1) APP_DATA.users.splice(i, 1);
+    ['transactions','rentals','messages','supportMessages','pendingDeposits','pendingWithdrawals','depositHistory','withdrawHistory'].forEach(k => { APP_DATA[k] = APP_DATA[k].filter(x => normalizePhone(x.phone) !== normalizePhone(phone) && normalizePhone(x.userPhone) !== normalizePhone(phone)); });
+    await saveData();
+    loadAdminDashboard();
+    showToast('✅ User '+phone+' deleted!', 'success');
+}
+async function adminResetPassword(phone){ const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone)); if(!u){ showToast('User not found!', 'error'); return; } const np = prompt('Enter new password for '+phone+':', '123456'); if(np === null) return; if(!np || np.length < 4){ showToast('Password must be at least 4 characters!', 'error'); return; } u.password = np; saveData(); showToast('✅ Password reset for '+phone+'!', 'success'); }
+async function adminSuspendUser(phone){ const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone)); if(!u){ showToast('User not found!', 'error'); return; } if(u.isAdmin){ showToast('❌ Cannot suspend admin!', 'error'); return; } if(u.suspended){ showToast('Already suspended', 'warning'); return; } const r = prompt('Suspend '+phone+'?\n\nReason:', 'Violation of terms'); if(r === null) return; u.suspended = true; u.suspensionReason = r || 'Violation of terms'; await saveData(); loadAdminDashboard(); showToast('🚫 Suspended!', 'error'); }
+async function adminUnsuspendUser(phone){ const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone)); if(!u){ showToast('User not found!', 'error'); return; } if(!u.suspended){ showToast('Not suspended', 'warning'); return; } if(!confirm('Unsuspend '+phone+'?')) return; u.suspended = false; u.suspensionReason = ''; await saveData(); loadAdminDashboard(); showToast('✅ Unsuspended!', 'success'); }
+function adminImpersonateUser(phone){ const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone)); if(!u){ showToast('User not found!', 'error'); return; } if(u.isAdmin){ showToast('Cannot impersonate another admin', 'error'); return; } if(!confirm('Login as '+phone+'?')) return; localStorage.setItem('currentUser', JSON.stringify(u)); currentUser = u; showApp(u); showToast('👤 Viewing as '+phone, 'success'); }
+function adminReplyToUser(phone){ const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(phone)); if(!u){ showToast('User not found', 'error'); return; } const m = prompt('Reply to '+phone+':', ''); if(m === null || m.trim() === '') return; APP_DATA.messages.push({ id:'msg_'+Date.now(), phone, sender:'admin', content:m.trim(), timestamp:new Date().toISOString(), read:false, isBroadcast:false, isPrivate:true, fromAdmin:true }); saveData(); renderAdminMessages(); showToast('💬 Reply sent!', 'success'); }
+function adminSendPrivateReply(){ const i = document.getElementById('adminMessageInput'); const p = document.getElementById('adminReplyPhone'); const c = i.value.trim(); const ph = p.value.trim(); if(!c || !ph){ showToast('Enter message and phone', 'error'); return; } if(!APP_DATA.users.find(u => normalizePhone(u.phone) === normalizePhone(ph))){ showToast('User not found', 'error'); return; } APP_DATA.messages.push({ id:'msg_'+Date.now(), phone:ph, sender:'admin', content:c, timestamp:new Date().toISOString(), read:false, isBroadcast:false, isPrivate:true, fromAdmin:true }); saveData(); i.value = ''; p.value = ''; renderAdminMessages(); showToast('💬 Reply sent!', 'success'); }
+function adminSendBroadcast(){ const i = document.getElementById('adminMessageInput'); const c = i.value.trim(); if(!c){ showToast('Enter a message', 'error'); return; } APP_DATA.messages.push({ id:'msg_'+Date.now(), phone:'all_users', sender:'admin', content:c, timestamp:new Date().toISOString(), read:false, isBroadcast:true, isPrivate:false, fromAdmin:true }); saveData(); i.value = ''; renderAdminMessages(); showToast('📢 Broadcast sent!', 'success'); }
+function adminBroadcastToAll(){ const m = prompt('📢 Send to ALL users:', ''); if(m === null || m.trim() === '') return; APP_DATA.messages.push({ id:'msg_'+Date.now(), phone:'all_users', sender:'admin', content:m.trim(), timestamp:new Date().toISOString(), read:false, isBroadcast:true, isPrivate:false, fromAdmin:true }); saveData(); renderAdminMessages(); showToast('📢 Broadcast sent!', 'success'); }
+function renderAdminDeposits(){ const l = document.getElementById('adminDepositList'); if(!l) return; const p = APP_DATA.pendingDeposits.filter(d => d.status === 'pending'); if(p.length === 0){ l.innerHTML = '<p style="color:#6c6c8a;text-align:center;padding:20px 0;">No pending recharges</p>'; return; } l.innerHTML = p.map(d => `<div class="admin-user-row"><div class="aur-info"><div class="aur-phone"><i class="fas fa-mobile-alt"></i> ${d.phone}</div><div class="aur-meta">Amount: <strong style="color:#2ecc71;">UGX ${d.amount.toLocaleString()}</strong><br>${d.method} • ${new Date(d.date).toLocaleString()}</div></div><div class="aur-actions" style="grid-template-columns:1fr 1fr;"><button class="aur-btn unsuspend" onclick="adminApproveDeposit('${d.id}')" title="Approve"><i class="fas fa-check"></i></button><button class="aur-btn delete" onclick="adminRejectDeposit('${d.id}')" title="Reject"><i class="fas fa-times"></i></button></div></div>`).join(''); }
+function renderAdminWithdrawals(){ const l = document.getElementById('adminWithdrawalList'); if(!l) return; const p = APP_DATA.pendingWithdrawals.filter(w => w.status === 'pending'); if(p.length === 0){ l.innerHTML = '<p style="color:#6c6c8a;text-align:center;padding:20px 0;">No pending withdrawals</p>'; return; } l.innerHTML = p.map(w => `<div class="admin-user-row"><div class="aur-info"><div class="aur-phone"><i class="fas fa-mobile-alt"></i> ${w.phone}</div><div class="aur-meta">Amount: <strong style="color:#f59e0b;">UGX ${w.amount.toLocaleString()}</strong><br>${w.withdrawMethod||'Mobile Money'} • ${w.withdrawPhone||'N/A'}<br>${new Date(w.date).toLocaleString()}</div></div><div class="aur-actions" style="grid-template-columns:1fr 1fr;"><button class="aur-btn unsuspend" onclick="adminApproveWithdrawalById('${w.id}')" title="Approve"><i class="fas fa-check"></i></button><button class="aur-btn delete" onclick="adminRejectWithdrawal('${w.id}')" title="Reject"><i class="fas fa-times"></i></button></div></div>`).join(''); }
+function renderAdminMessages(){ const a = document.getElementById('adminMessageArea'); if(!a) return; const m = APP_DATA.messages.filter(x => x.isBroadcast === true || x.sender === 'user' || x.fromAdmin === true); if(m.length === 0){ a.innerHTML = '<p>No messages yet.</p>'; return; } m.sort((x,y) => new Date(y.timestamp) - new Date(x.timestamp)); a.innerHTML = m.slice(0,30).map(x => { const sn = x.sender === 'admin' ? '📢 Admin' : (x.phone||'User'); const b = x.isBroadcast ? ' <span style="background:#00d4ff;color:#fff;padding:1px 8px;border-radius:10px;font-size:9px;">Broadcast</span>' : (x.isPrivate ? ' <span style="background:#17a2b8;color:#fff;padding:1px 8px;border-radius:10px;font-size:9px;">Private</span>' : ''); return `<div class="admin-msg-item"><div class="ami-head"><strong>${sn}${b}</strong><span class="ami-time">${new Date(x.timestamp).toLocaleString()}</span></div><div class="ami-body">${x.content}</div></div>`; }).join(''); }
+function renderAdminSupport(){ const a = document.getElementById('adminSupportArea'); if(!a) return; const m = APP_DATA.supportMessages.filter(x => x.sender === 'user'); if(m.length === 0){ a.innerHTML = '<p>No support messages.</p>'; return; } const g = {}; m.forEach(x => { if(!g[x.phone]) g[x.phone] = []; g[x.phone].push(x); }); a.innerHTML = Object.keys(g).map(p => { const ms = g[p]; const l = ms[ms.length-1]; return `<div class="admin-msg-item"><div class="ami-head"><strong>📱 ${p}</strong><span class="ami-time">${new Date(l.timestamp).toLocaleString()}</span></div><div class="ami-body">${l.content.substring(0,100)}${l.content.length>100?'...':''}</div><div style="margin-top:6px;font-size:11px;color:#6c6c8a;">${ms.length} messages</div></div>`; }).join(''); }
+function adminSendSupportReply(){ const i = document.getElementById('adminSupportInput'); const p = document.getElementById('adminSupportPhone'); const c = i.value.trim(); const ph = p.value.trim(); if(!c || !ph){ showToast('Enter reply and phone', 'error'); return; } if(!APP_DATA.users.find(u => normalizePhone(u.phone) === normalizePhone(ph))){ showToast('User not found', 'error'); return; } APP_DATA.supportMessages.push({ id:'support_'+Date.now(), phone:ph, userPhone:ph, sender:'admin', content:c, timestamp:new Date().toISOString(), isRead:true }); saveData(); i.value = ''; p.value = ''; renderAdminSupport(); showToast('💬 Reply sent!', 'success'); }
+function renderAdminTransactions(){ const l = document.getElementById('adminTransactionList'); if(!l) return; const t = [...APP_DATA.transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,50); if(t.length === 0){ l.innerHTML = '<p style="color:#6c6c8a;text-align:center;padding:30px 0;">No transactions</p>'; return; } l.innerHTML = t.map(x => { const pos = ['deposit','earning','referral_bonus','welcome_bonus','voucher'].includes(x.type); const sc = x.status === 'completed' ? '#2ecc71' : x.status === 'pending' ? '#f59e0b' : '#ff4757'; return `<div class="admin-user-row"><div class="aur-info"><div class="aur-phone" style="font-size:14px;">${x.description}</div><div class="aur-meta">${x.phone} • ${new Date(x.date).toLocaleString()} • <span style="color:${sc};font-weight:700;">${x.status}</span></div></div><div style="color:${pos?'#2ecc71':'#ff4757'};font-weight:700;font-size:14px;flex-shrink:0;">${pos?'+':'-'} UGX ${x.amount.toLocaleString()}</div></div>`; }).join(''); }
+function renderAdminRentals(){ const l = document.getElementById('adminRentalList'); if(!l) return; const r = [...APP_DATA.rentals].sort((a,b) => new Date(b.startDate) - new Date(a.startDate)); if(r.length === 0){ l.innerHTML = '<p style="color:#6c6c8a;text-align:center;padding:30px 0;">No AI Bikes yet</p>'; return; } l.innerHTML = r.map(x => `<div class="admin-user-row"><div class="aur-info"><div class="aur-phone">⚡ ${x.propertyName}</div><div class="aur-meta">${x.phone} • ${x.status === 'active' ? '🟢 Active' : '✅ Completed'}<br>Day ${x.dayCounter||0}/${x.totalDays||0}</div></div><div style="text-align:right;flex-shrink:0;"><div style="color:#f59e0b;font-weight:700;">UGX ${x.amount.toLocaleString()}</div><div style="font-size:11px;color:#6c6c8a;">${x.remainingDays} days left</div></div></div>`).join(''); }
+
+/* ================= ADMIN VOUCHER FUNCTIONS ================= */
+function generateVoucherCode(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for(let i=0;i<6;i++) code += chars.charAt(Math.floor(Math.random()*chars.length));
+    return code;
+}
+async function adminGenerateVoucher(){
+    const amtInput = document.getElementById('adminVoucherAmount');
+    const msg = document.getElementById('adminVoucherMessage');
+    const amount = parseFloat(amtInput.value);
+    msg.style.display = 'none';
+    if(!amount || amount < 500){ msg.textContent = '❌ Minimum reward is 500 UGX'; msg.style.color = '#ff4757'; msg.style.display = 'block'; return; }
+    let code;
+    do { code = generateVoucherCode(); } while(APP_DATA.vouchers.find(v => v.code === code));
+    APP_DATA.vouchers.push({
+        code,
+        amount,
+        used: false,
+        usedBy: null,
+        usedDate: null,
+        createdDate: new Date().toISOString(),
+        createdBy: currentUser ? currentUser.phone : 'admin'
+    });
+    await saveData();
+    renderAdminVouchers();
+    const av = APP_DATA.vouchers.filter(v => !v.used);
+    document.getElementById('voucherCountBadge').textContent = av.length;
+    msg.innerHTML = '✅ Code generated: <strong style="color:#00d4ff;font-size:16px;letter-spacing:1px;">'+code+'</strong> → UGX '+amount.toLocaleString();
+    msg.style.color = '#2ecc71';
+    msg.style.display = 'block';
+    amtInput.value = '';
+    showToast('🎁 Code '+code+' created!', 'success');
+}
+function renderAdminVouchers(){
+    const l = document.getElementById('adminVoucherList');
+    if(!l) return;
+    const v = [...APP_DATA.vouchers].sort((a,b) => new Date(b.createdDate) - new Date(a.createdDate));
+    if(v.length === 0){ l.innerHTML = '<p style="color:#6c6c8a;text-align:center;padding:20px 0;">No gift codes yet</p>'; return; }
+    l.innerHTML = v.map(x => {
+        const status = x.used
+            ? '<span style="color:#ff4757;font-weight:700;">❌ USED</span>'
+            : '<span style="color:#2ecc71;font-weight:700;">✅ ACTIVE</span>';
+        const usedInfo = x.used ? '<br><span style="font-size:11px;color:#6c6c8a;">Used by '+x.usedBy+' on '+new Date(x.usedDate).toLocaleString()+'</span>' : '';
+        return '<div class="admin-user-row">'
+            + '<div class="aur-info">'
+            +   '<div class="aur-phone" style="font-family:monospace;font-size:18px;letter-spacing:2px;">'+x.code+'</div>'
+            +   '<div class="aur-meta">Reward: <strong style="color:#f59e0b;">UGX '+x.amount.toLocaleString()+'</strong> · '+status
+            +     '<br>'+new Date(x.createdDate).toLocaleString()+usedInfo
+            +   '</div>'
+            + '</div>'
+            + '<div class="aur-actions" style="grid-template-columns:1fr 1fr;">'
+            +   '<button class="aur-btn add" onclick="adminCopyVoucher(\''+x.code+'\')" title="Copy"><i class="fas fa-copy"></i></button>'
+            +   '<button class="aur-btn delete" onclick="adminDeleteVoucher(\''+x.code+'\')" title="Delete"><i class="fas fa-trash"></i></button>'
+            + '</div>'
+            + '</div>';
+    }).join('');
+}
+function adminCopyVoucher(code){
+    navigator.clipboard.writeText(code).then(() => showToast('📋 Code '+code+' copied!', 'success'));
+}
+async function adminDeleteVoucher(code){
+    if(!confirm('Delete gift code '+code+'?')) return;
+    APP_DATA.vouchers = APP_DATA.vouchers.filter(v => v.code !== code);
+    await saveData();
+    renderAdminVouchers();
+    const av = APP_DATA.vouchers.filter(v => !v.used);
+    document.getElementById('voucherCountBadge').textContent = av.length;
+    showToast('🗑️ Code deleted', 'success');
+}
+
+async function adminApproveDeposit(id){ if(!confirm('Approve this deposit?')) return; const d = APP_DATA.pendingDeposits.find(x => x.id === id); if(!d || d.status !== 'pending') return; const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(d.phone)); if(!u){ showToast('User not found', 'error'); return; } u.balance = (u.balance||0) + d.amount; u.totalDeposits = (u.totalDeposits||0) + d.amount; d.status = 'approved'; const h = APP_DATA.depositHistory.find(x => x.id === id); if(h){ h.status = 'approved'; h.approvedDate = new Date().toISOString(); } const t = APP_DATA.transactions.find(x => normalizePhone(x.phone) === normalizePhone(d.phone) && x.type === 'deposit_pending' && x.amount === d.amount && x.status === 'pending'); if(t){ t.status = 'completed'; t.type = 'deposit'; } await saveData(); loadAdminDashboard(); showToast('✅ Deposit approved', 'success'); }
+async function adminRejectDeposit(id){ if(!confirm('Reject this deposit?')) return; const d = APP_DATA.pendingDeposits.find(x => x.id === id); if(!d || d.status !== 'pending') return; d.status = 'rejected'; const h = APP_DATA.depositHistory.find(x => x.id === id); if(h) h.status = 'rejected'; const t = APP_DATA.transactions.find(x => normalizePhone(x.phone) === normalizePhone(d.phone) && x.type === 'deposit_pending' && x.status === 'pending'); if(t) t.status = 'rejected'; await saveData(); loadAdminDashboard(); showToast('❌ Deposit rejected', 'error'); }
+async function adminApproveWithdrawalById(id){ const w = APP_DATA.pendingWithdrawals.find(x => x.id === id); if(!w || w.status !== 'pending'){ showToast('Withdrawal not found', 'error'); return; } w.status = 'approved'; const h = APP_DATA.withdrawHistory.find(x => x.id === id); if(h){ h.status = 'approved'; h.approvedDate = new Date().toISOString(); } const t = APP_DATA.transactions.find(x => normalizePhone(x.phone) === normalizePhone(w.phone) && x.type === 'withdrawal' && x.amount === w.amount && x.status === 'pending'); if(t) t.status = 'completed'; await saveData(); loadAdminDashboard(); showToast('✅ Withdrawal approved', 'success'); }
+async function adminRejectWithdrawal(id){ if(!confirm('Reject this withdrawal?')) return; const w = APP_DATA.pendingWithdrawals.find(x => x.id === id); if(!w || w.status !== 'pending') return; const u = APP_DATA.users.find(x => normalizePhone(x.phone) === normalizePhone(w.phone)); if(u){ u.balance += w.amount + w.fee; u.totalWithdrawn = Math.max(0, (u.totalWithdrawn||0) - w.amount); } w.status = 'rejected'; const h = APP_DATA.withdrawHistory.find(x => x.id === id); if(h) h.status = 'rejected'; const t = APP_DATA.transactions.find(x => normalizePhone(x.phone) === normalizePhone(w.phone) && x.type === 'withdrawal' && x.amount === w.amount && x.status === 'pending'); if(t) t.status = 'rejected'; await saveData(); loadAdminDashboard(); showToast('❌ Withdrawal rejected', 'error'); }
+function adminApproveWithdrawal(){ const p = document.getElementById('adminApprovePhone').value.trim(); const m = document.getElementById('adminApproveMessage'); m.style.display = 'none'; if(!p){ m.textContent = 'Please enter a user phone'; m.style.color = '#ff4757'; m.style.display = 'block'; return; } const w = APP_DATA.pendingWithdrawals.find(x => normalizePhone(x.phone) === normalizePhone(p) && x.status === 'pending'); if(!w){ m.textContent = 'No pending withdrawal for this user'; m.style.color = '#ff4757'; m.style.display = 'block'; return; } adminApproveWithdrawalById(w.id); document.getElementById('adminApprovePhone').value = ''; m.textContent = '✅ Withdrawal approved for '+p; m.style.color = '#2ecc71'; m.style.display = 'block'; setTimeout(() => { m.style.display = 'none'; }, 4000); }
+async function syncToCloud(){ showToast('☁️ Data saved locally!', 'success'); }
+
+function showToast(message, type){
+    type = type || 'success';
+    const s = document.getElementById('snackbar');
+    if(!s) return;
+    const c = { success:'#0f9d58', error:'#ef4444', info:'#3b82f6', warning:'#f59e0b' };
+    s.style.background = c[type] || c.success;
+    s.textContent = message;
+    s.className = 'show';
+    setTimeout(() => s.className = s.className.replace('show', ''), 3000);
+}
+
+window.showPage = showPage;
+window.togglePassword = togglePassword;
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.handleLogout = handleLogout;
+window.copyReferralCode = copyReferralCode;
+window.copyReferralLink = copyReferralLink;
+window.contactManager = contactManager;
+window.setWithdrawAmount = setWithdrawAmount;
+window.calculateWithdrawAmount = calculateWithdrawAmount;
+window.handleWithdraw = handleWithdraw;
+window.selectNetwork = selectNetwork;
+window.setDepositAmount = setDepositAmount;
+window.updateDepositFeePreview = updateDepositFeePreview;
+window.initiateMarzDeposit = initiateMarzDeposit;
+window.showDepositStep1 = showDepositStep1;
+window.cancelMarzDeposit = cancelMarzDeposit;
+window.filterTransactions = filterTransactions;
+window.redeemVoucher = redeemVoucher;
+window.checkVoucherStatus = checkVoucherStatus;
+window.openTelegram = openTelegram;
+window.rentProperty = rentProperty;
+window.sendSupportMessage = sendSupportMessage;
+window.handleChangePassword = handleChangePassword;
+window.forgotPassword = forgotPassword;
+window.openManagerTelegram = openManagerTelegram;
+window.adminRefreshData = adminRefreshData;
+window.adminSwitchTab = adminSwitchTab;
+window.adminCheckUserExists = adminCheckUserExists;
+window.adminAddBalanceToUser = adminAddBalanceToUser;
+window.adminAddBalance = adminAddBalance;
+window.adminDeleteUser = adminDeleteUser;
+window.adminResetPassword = adminResetPassword;
+window.adminSuspendUser = adminSuspendUser;
+window.adminUnsuspendUser = adminUnsuspendUser;
+window.adminImpersonateUser = adminImpersonateUser;
+window.adminReplyToUser = adminReplyToUser;
+window.adminSendPrivateReply = adminSendPrivateReply;
+window.adminSendBroadcast = adminSendBroadcast;
+window.adminBroadcastToAll = adminBroadcastToAll;
+window.adminApproveDeposit = adminApproveDeposit;
+window.adminRejectDeposit = adminRejectDeposit;
+window.adminApproveWithdrawalById = adminApproveWithdrawalById;
+window.adminRejectWithdrawal = adminRejectWithdrawal;
+window.adminApproveWithdrawal = adminApproveWithdrawal;
+window.adminSendSupportReply = adminSendSupportReply;
+window.adminGenerateVoucher = adminGenerateVoucher;
+window.adminCopyVoucher = adminCopyVoucher;
+window.adminDeleteVoucher = adminDeleteVoucher;
+window.syncToCloud = syncToCloud;
+</script>
+</body>
+</html>
