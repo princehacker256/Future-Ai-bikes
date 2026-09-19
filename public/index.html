@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,6 +30,20 @@
         #preloader .preloader-status{font-size:17px;font-weight:500;color:#94a3b8;display:flex;align-items:baseline;gap:1px}
         #preloader .preloader-status .dots::after{content:'';display:inline-block;width:1.2em;text-align:left;animation:loadingDots 3s infinite steps(4)}
         @keyframes loadingDots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+
+        /* Sending prompt animations */
+        @keyframes promptPulse{
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50%      { transform: scale(1.12) rotate(-4deg); }
+        }
+        @keyframes signalFloat{
+            0%, 100% { transform: translateY(0) scale(1); opacity: .8; }
+            50%      { transform: translateY(-6px) scale(1.15); opacity: 1; }
+        }
+        @keyframes liveDot{
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,.6); }
+            50%      { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+        }
 
         /* Breathing VIP avatar */
         @keyframes vipBreath{
@@ -193,7 +208,10 @@
         .fee-summary .fee-row:last-child{margin-bottom:0}
         .fee-summary .fee-row .fee-value{font-weight:700;color:#1e293b}
         .fee-summary .fee-row.highlight .fee-value{color:#0f9d58;font-size:16px}
-        .btn-primary-green{width:100%;padding:15px;background:#0f9d58;border:none;border-radius:12px;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+        .btn-primary-green{width:100%;padding:16px;background:linear-gradient(135deg,#10b46a 0%,#0f9d58 55%,#0c8a4c 100%);border:none;border-radius:14px;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 18px rgba(15,157,88,.35),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .12s ease,box-shadow .12s ease}
+        .btn-primary-green:hover{box-shadow:0 8px 22px rgba(15,157,88,.45),inset 0 1px 0 rgba(255,255,255,.22)}
+        .btn-primary-green:active{transform:translateY(1px) scale(.99);box-shadow:0 3px 10px rgba(15,157,88,.35)}
+        .btn-primary-green:disabled{opacity:.8;cursor:not-allowed;transform:none;box-shadow:0 4px 12px rgba(15,157,88,.25)}
         .info-box{background:#f8fafc;border-radius:14px;padding:16px;margin-top:16px;display:flex;gap:12px;align-items:flex-start;border:1px solid #eef1f5}
         .info-box .info-icon{width:36px;height:36px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;color:#0f9d58;font-size:16px;flex-shrink:0}
         .info-box .info-text h5{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px}
@@ -730,6 +748,8 @@
             </div>
         </div>
         <div class="menu-list">
+            <div class="menu-item" onclick="showPage('withdrawHistoryPage')"><div class="mi-icon yellow"><i class="fas fa-history"></i></div><div class="mi-text"><div class="mi-title">Withdrawal History</div><div class="mi-sub">View all your cashout requests</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
+            <div class="menu-item" onclick="showPage('depositHistoryPage')"><div class="mi-icon purple"><i class="fas fa-receipt"></i></div><div class="mi-text"><div class="mi-title">Recharge History</div><div class="mi-sub">View all your deposit records</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
             <div class="menu-item" onclick="showPage('changePasswordPage')"><div class="mi-icon blue"><i class="fas fa-user"></i></div><div class="mi-text"><div class="mi-title">Personal Information</div><div class="mi-sub">Manage your credentials</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
             <div class="menu-item" onclick="showPage('changePasswordPage')"><div class="mi-icon purple"><i class="fas fa-shield-alt"></i></div><div class="mi-text"><div class="mi-title">Security & Passcode</div><div class="mi-sub">Secure wallet authorization</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
             <div class="menu-item" onclick="showPage('supportPage')"><div class="mi-icon teal"><i class="fas fa-headset"></i></div><div class="mi-text"><div class="mi-title">Premium Support Desk</div><div class="mi-sub">24/7 interactive care</div></div><div class="mi-arrow"><i class="fas fa-chevron-right"></i></div></div>
@@ -790,25 +810,35 @@
                     <input type="tel" id="payerPhoneNumber" placeholder="712345678 (MTN or Airtel)" />
                 </div>
                 <div style="font-size:12px;color:#94a3b8;margin-top:6px;">Enter the number that will receive the payment prompt (MTN or Airtel).</div>
-                <button class="btn-primary-green" id="payWithMarzBtn" style="margin-top:16px;" onclick="initiateMarzDeposit()"><i class="fas fa-mobile-alt"></i> Pay with Mobile Money</button>
+                <button class="btn-primary-green" id="payWithMarzBtn" style="margin-top:16px;" onclick="initiateMarzDeposit()">
+                    <span style="display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;">
+                        <span style="font-size:18px;">📱</span>
+                        Proceed to Pay
+                        <i class="fas fa-arrow-right" style="font-size:15px;opacity:.9;"></i>
+                    </span>
+                </button>
                 <div id="depositError" style="display:none;color:#ef4444;font-size:13px;margin-top:10px;text-align:center;font-weight:600;background:#fef2f2;padding:10px;border-radius:8px;border:1px solid #fecaca;"></div>
             </div>
             <div class="info-box" style="margin:0 20px 16px;">
                 <div class="info-icon"><i class="fas fa-shield-alt"></i></div>
-                <div class="info-text"><h5>Instant & Secure Payment</h5><p>After clicking <strong>Proceed</strong>, check your phone for a PIN prompt to authorize the transaction. Your balance will update automatically upon completion.</p></div>
+                <div class="info-text"><h5>Instant & Secure Payment</h5><p>After clicking <strong>Proceed to Pay</strong>, check your phone for a PIN prompt to authorize the transaction. Your balance will update automatically upon completion.</p></div>
             </div>
         </div>
         <div id="depositStep2" style="display:none;">
             <div class="withdraw-form" style="text-align:center;">
                 <div id="depositWaiting" style="display:block;">
-                    <div style="font-size:48px;margin-bottom:12px;">📲</div>
+                    <div style="position:relative;display:inline-block;margin-bottom:12px;">
+                        <div style="font-size:52px;line-height:1;animation:promptPulse 1.6s ease-in-out infinite;">📲</div>
+                        <div style="position:absolute;top:-4px;right:-14px;font-size:22px;animation:signalFloat 1.6s ease-in-out infinite;">✨</div>
+                        <div style="position:absolute;bottom:-2px;left:-16px;font-size:20px;animation:signalFloat 1.6s ease-in-out infinite .4s;">📡</div>
+                    </div>
                     <h3 style="font-weight:800;font-size:18px;margin-bottom:8px;color:#1e293b;">Approve on your phone</h3>
                     <p style="font-size:14px;color:#64748b;margin-bottom:16px;">A payment prompt has been sent to <strong id="waitingPhone" style="color:#0f9d58;"></strong>. Open the MTN/Airtel prompt and enter your PIN to approve.</p>
                     <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #eef1f5;text-align:left;">
                         <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Amount</span><span style="font-weight:600;font-size:13px;color:#1e293b;" id="waitingAmount">—</span></div>
                         <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Fee (5%)</span><span style="font-weight:600;font-size:13px;color:#f59e0b;" id="waitingFee">—</span></div>
                         <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">You will receive</span><span style="font-weight:700;font-size:14px;color:#0f9d58;" id="waitingNet">—</span></div>
-                        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Status</span><span style="font-weight:600;font-size:13px;color:#f59e0b;" id="waitingStatus">Waiting for approval…</span></div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;"><span style="color:#64748b;font-size:13px;">Status</span><span style="font-weight:700;font-size:13px;color:#f59e0b;display:inline-flex;align-items:center;gap:6px;" id="waitingStatus"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 0 rgba(245,158,11,.6);animation:liveDot 1.4s ease-in-out infinite;"></span>Sending prompt…</span></div>
                     </div>
                     <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;margin-bottom:12px;"></div>
                     <p style="font-size:12px;color:#94a3b8;">Checking payment status automatically…</p>
@@ -1158,59 +1188,41 @@ function selectCountry(code){
             regInp.focus();
         }
     }
-
     else if(pendingCountryTarget === 'withdraw'){
         selectedWithdrawCountry = code;
         updateCountryBtn('withdraw', code);
-
-        // update dial prefix in the input-group
         const wDial = document.getElementById('withdrawDialPrefix');
         if(wDial) wDial.textContent = c.dial + ' ';
-
-        // update placeholder + clear old number
         const wPhone = document.getElementById('withdrawPhone');
         if(wPhone){
             wPhone.placeholder = c.placeholder;
             wPhone.value = '';
             wPhone.focus();
         }
-
-        // update min amount hint
         const minHint = document.getElementById('withdrawMinHint');
         if(minHint) minHint.textContent = 'Min: ' + c.currency + ' ' + c.minWithdraw.toLocaleString();
-
-        // hide fee summary + clear errors
         const fs = document.getElementById('feeSummary');
         if(fs) fs.style.display = 'none';
         const we = document.getElementById('withdrawError');
         if(we) we.style.display = 'none';
-
         applyCurrencyLabels();
     }
-
     else if(pendingCountryTarget === 'deposit'){
         selectedDepositCountry = code;
         updateCountryBtn('deposit', code);
-
-        // update dial prefix in the input-group
         const dDial = document.getElementById('depositDialPrefix');
         if(dDial) dDial.textContent = c.dial + ' ';
-
-        // update placeholder + clear old number
         const payInp = document.getElementById('payerPhoneNumber');
         if(payInp){
             payInp.placeholder = c.placeholder + ' (MTN or Airtel)';
             payInp.value = '';
             payInp.focus();
         }
-
         const de = document.getElementById('depositError');
         if(de) de.style.display = 'none';
-
         applyCurrencyLabels();
         updateDepositFeePreview();
     }
-
     closeCountryModal();
 }
 function updateCountryBtn(target, code){
@@ -1222,7 +1234,6 @@ function updateCountryBtn(target, code){
     if(n) n.textContent = c.name;
     if(u) u.textContent = '('+c.currency+')';
 }
-
 function activeCurrencyForPage(){
     if(document.getElementById('depositPage') && document.getElementById('depositPage').classList.contains('active')){
         return getCountryByCode(selectedDepositCountry).currency;
@@ -1269,7 +1280,6 @@ document.addEventListener('DOMContentLoaded', async function(){
     autoFillReferralCode();
     loadRememberedCredentials();
 
-    // Ensure all users have a country (migration for old accounts)
     APP_DATA.users.forEach(u => { if(!u.country) u.country = DEFAULT_COUNTRY; });
 
     const userData = localStorage.getItem('currentUser');
@@ -1797,7 +1807,7 @@ function showDepositStep1(){
     if(s) s.style.display = 'none';
     if(f) f.style.display = 'none';
     const b = document.getElementById('payWithMarzBtn');
-    if(b){ b.disabled = false; b.innerHTML = '<i class="fas fa-mobile-alt"></i> Pay with Mobile Money'; }
+    if(b){ b.disabled = false; b.innerHTML = '<span style="display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;"><span style="font-size:18px;">📱</span>Proceed to Pay<i class="fas fa-arrow-right" style="font-size:15px;opacity:.9;"></i></span>'; }
 }
 function cancelMarzDeposit(){ showDepositStep1(); showToast('Payment cancelled. You can try again.', 'warning'); }
 function loadDepositPage(){
@@ -1841,16 +1851,16 @@ async function initiateMarzDeposit(){
         ee.style.display = 'block'; return;
     }
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Initiating…';
+    btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;"><span class="spinner-border spinner-border-sm" role="status" style="width:16px;height:16px;border-width:2px;"></span>📤 Sending Prompt…</span>';
     try {
         const res = await fetch('/api/deposit/initiate', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ amount, phone, userPhone:user.phone, country:selectedDepositCountry, currency:cInfo.currency }) });
         const data = await res.json();
-        if(!data.success){ ee.textContent = '❌ ' + (data.message||'Failed'); ee.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-mobile-alt"></i> Pay with Mobile Money'; return; }
+        if(!data.success){ ee.textContent = '❌ ' + (data.message||'Failed'); ee.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;"><span style="font-size:18px;">📱</span>Proceed to Pay<i class="fas fa-arrow-right" style="font-size:15px;opacity:.9;"></i></span>'; return; }
         document.getElementById('waitingPhone').textContent = data.data.phone || phone;
         document.getElementById('waitingAmount').textContent = cInfo.currency+' '+amount.toLocaleString();
         document.getElementById('waitingFee').textContent = cInfo.currency+' '+data.data.fee.toLocaleString();
         document.getElementById('waitingNet').textContent = cInfo.currency+' '+data.data.netCredit.toLocaleString();
-        document.getElementById('waitingStatus').textContent = 'Waiting for approval…';
+        document.getElementById('waitingStatus').innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 0 rgba(245,158,11,.6);animation:liveDot 1.4s ease-in-out infinite;"></span>Sending prompt…';
         document.getElementById('depositStep1').style.display = 'none';
         document.getElementById('depositStep2').style.display = 'block';
         const id = 'dep_' + Date.now();
@@ -1865,7 +1875,7 @@ async function initiateMarzDeposit(){
         ee.textContent = '❌ Network error. Please try again.';
         ee.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-mobile-alt"></i> Pay with Mobile Money';
+        btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;"><span style="font-size:18px;">📱</span>Proceed to Pay<i class="fas fa-arrow-right" style="font-size:15px;opacity:.9;"></i></span>';
     }
 }
 function startMarzPolling(ref, net, amount, phone, id){
@@ -1881,8 +1891,8 @@ function startMarzPolling(ref, net, amount, phone, id){
             const se = document.getElementById('waitingStatus');
             if(st === 'completed' || st === 'sandbox'){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; await creditMarzDeposit(net, amount, phone, ref, id); return; }
             if(st === 'failed' || st === 'cancelled'){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; markMarzFailed(id, ref, 'Payment was declined or cancelled.'); return; }
-            if(se) se.textContent = 'Waiting for approval… (' + att + ')';
-            if(att >= max){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; if(se){ se.textContent = 'Still pending'; se.style.color = '#f59e0b'; } showToast('Payment still pending.', 'warning'); }
+            if(se) se.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 0 rgba(245,158,11,.6);animation:liveDot 1.4s ease-in-out infinite;"></span>Waiting for approval… (' + att + ')';
+            if(att >= max){ clearInterval(window._marzPollTimer); window._marzPollTimer = null; if(se){ se.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:liveDot 1.4s ease-in-out infinite;"></span>Still pending'; se.style.color = '#f59e0b'; } showToast('Payment still pending.', 'warning'); }
         } catch(e){ console.warn('Poll error', e); }
     }, 3000);
 }
@@ -1940,13 +1950,70 @@ function renderTransactions(){
     }).join('');
 }
 function renderWithdrawHistory(){
-    const list = document.getElementById('withdrawHistoryList'); if(!list) return;
+    const list = document.getElementById('withdrawHistoryList');
+    if(!list) return;
     const u = currentUser;
-    const h = APP_DATA.pendingWithdrawals.filter(w => normalizePhone(w.phone) === normalizePhone(u.phone)).sort((a,b) => new Date(b.date) - new Date(a.date));
-    if(h.length === 0){ list.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px 0;">No withdrawal history</p>'; return; }
-    list.innerHTML = h.map(w => {
+    if(!u) return;
+    const h = APP_DATA.pendingWithdrawals
+        .filter(w => normalizePhone(w.phone) === normalizePhone(u.phone))
+        .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    if(h.length === 0){
+        list.innerHTML = `
+            <div style="text-align:center;padding:44px 20px;background:#fff;border-radius:18px;border:1px solid #eef1f5;">
+                <div style="font-size:48px;margin-bottom:12px;">💸</div>
+                <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px;">No Withdrawals Yet</h3>
+                <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">Your withdrawal requests will appear here.</p>
+                <button class="btn-primary-green" style="width:auto;padding:10px 28px;display:inline-flex;" onclick="showPage('withdrawPage')">Withdraw Now</button>
+            </div>`;
+        return;
+    }
+
+    const totalPending  = h.filter(w => w.status === 'pending').reduce((s,w) => s + (w.amount || 0), 0);
+    const totalApproved = h.filter(w => w.status === 'approved').reduce((s,w) => s + (w.amount || 0), 0);
+    const cur = h[0].currency || getUserCurrency(u);
+
+    const summary = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div style="background:#fff;border-radius:16px;padding:14px;border:1px solid #eef1f5;text-align:center;">
+                <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;">Total Paid Out</div>
+                <div style="font-size:17px;font-weight:800;color:#0f9d58;">${cur} ${totalApproved.toLocaleString()}</div>
+            </div>
+            <div style="background:#fff;border-radius:16px;padding:14px;border:1px solid #eef1f5;text-align:center;">
+                <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;">Pending</div>
+                <div style="font-size:17px;font-weight:800;color:#f59e0b;">${cur} ${totalPending.toLocaleString()}</div>
+            </div>
+        </div>`;
+
+    list.innerHTML = summary + h.map(w => {
         const cur = w.currency || getUserCurrency(u);
-        return `<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid #eef1f5;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:700;color:#ef4444;font-size:16px;">- ${cur} ${w.amount.toLocaleString()}</div><span style="padding:2px 12px;border-radius:12px;font-size:11px;font-weight:700;background:${w.status==='pending'?'#fef3c7':w.status==='approved'?'#d1fae5':'#fee2e2'};color:${w.status==='pending'?'#d97706':w.status==='approved'?'#0f9d58':'#ef4444'};">${w.status.charAt(0).toUpperCase()+w.status.slice(1)}</span></div><div style="font-size:12px;color:#94a3b8;margin-top:4px;">${new Date(w.date).toLocaleString()}</div></div>`;
+        const statusColor = w.status === 'pending' ? '#d97706' : w.status === 'approved' ? '#0f9d58' : '#ef4444';
+        const statusBg = w.status === 'pending' ? '#fef3c7' : w.status === 'approved' ? '#d1fae5' : '#fee2e2';
+        const statusIcon = w.status === 'pending' ? '⏳' : w.status === 'approved' ? '✅' : '❌';
+        const feeAmt = w.fee ? w.fee : Math.round((w.amount||0) * 0.09);
+        const netAmt = w.amount || 0;
+        const method = w.withdrawMethod || (w.withdrawNetwork === 'mtn' ? 'MTN Mobile Money' : 'Airtel Money');
+        return `
+        <div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;border:1px solid #eef1f5;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Withdrawal Amount</div>
+                    <div style="font-size:20px;font-weight:800;color:#ef4444;">- ${cur} ${netAmt.toLocaleString()}</div>
+                </div>
+                <span style="padding:4px 12px;border-radius:12px;font-size:11px;font-weight:800;background:${statusBg};color:${statusColor};">${statusIcon} ${w.status.charAt(0).toUpperCase()+w.status.slice(1)}</span>
+            </div>
+            <div style="background:#f8fafc;border-radius:12px;padding:12px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:#64748b;font-size:12px;">Fee (9%)</span><span style="font-weight:700;font-size:12px;color:#f59e0b;">${cur} ${feeAmt.toLocaleString()}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:#64748b;font-size:12px;">You received</span><span style="font-weight:700;font-size:13px;color:#0f9d58;">${cur} ${netAmt.toLocaleString()}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:#64748b;font-size:12px;">Method</span><span style="font-weight:700;font-size:12px;color:#1e293b;">${method}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:#64748b;font-size:12px;">Receiving Number</span><span style="font-weight:700;font-size:12px;color:#1e293b;">${w.withdrawPhone || '—'}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:#64748b;font-size:12px;">Reference</span><span style="font-weight:700;font-size:11px;color:#475569;font-family:monospace;">${w.id || '—'}</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#94a3b8;">
+                <span><i class="fas fa-clock" style="margin-right:4px;"></i>${new Date(w.date).toLocaleString()}</span>
+                ${w.status === 'pending' ? '<span style="color:#d97706;font-weight:700;">Processing…</span>' : ''}
+            </div>
+        </div>`;
     }).join('');
 }
 function renderDepositHistory(){
